@@ -62,7 +62,7 @@ In case your module uses custom import path, such as `example.com/myproject`, an
 
 ```yaml
 - name: Pull new module version
-  uses: nicholas-fedor/go-proxy-pull-action@v1.1.0
+  uses: nicholas-fedor/go-proxy-pull-action@v1.0.3
   with:
       import_path: example.com/myproject
 ```
