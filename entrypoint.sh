@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/env/bin/bash
 
 readonly TAG=${GITHUB_REF#refs/tags/*}
 readonly VERSION=${TAG##*/}
@@ -12,9 +12,10 @@ if [ "$VERSION" != "$TAG" ]; then
   PACKAGE=${PACKAGE}/${TAG%"/$VERSION"}
 fi
 
-# If either check fails, the version scoping logic (adding /vX to the package path) 
+# If either check fails, the version scoping logic (adding /vX to the package path)
 # is skipped, preventing the arithmetic error
-readonly MAJOR_VERSION="$(printf '%s' "$VERSION" | cut -d '.' -f 1 | sed 's/v//g')"
+MAJOR_VERSION="$(printf '%s' "$VERSION" | cut -d '.' -f 1 | sed 's/v//g')"
+readonly MAJOR_VERSION
 # [ -n "$MAJOR_VERSION" ] check ensures MAJOR_VERSION is not empty
 # grep -q '^[0-9]\+$' check ensures MAJOR_VERSION is numeric (contains only digits)
 if [ -n "$MAJOR_VERSION" ] && echo "$MAJOR_VERSION" | grep -q '^[0-9]\+$'; then
@@ -27,6 +28,6 @@ export GO111MODULE=on
 export GOPROXY="$INPUT_GOPROXY"
 
 mkdir dummy
-cd dummy
+cd dummy || exit
 go mod init dummy
 go get "$PACKAGE@$VERSION"
