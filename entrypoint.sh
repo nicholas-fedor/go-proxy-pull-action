@@ -1,7 +1,7 @@
-#!/env/bin/bash
+#!/bin/sh
 
-readonly TAG=${GITHUB_REF#refs/tags/*}
-readonly VERSION=${TAG##*/}
+readonly TAG="${GITHUB_REF#refs/tags/*}"
+readonly VERSION="${TAG##*/}"
 
 PACKAGE=${INPUT_IMPORT_PATH:=github.com/${GITHUB_REPOSITORY}}
 
@@ -19,7 +19,12 @@ readonly MAJOR_VERSION
 # [ -n "$MAJOR_VERSION" ] check ensures MAJOR_VERSION is not empty
 # grep -q '^[0-9]\+$' check ensures MAJOR_VERSION is numeric (contains only digits)
 if [ -n "$MAJOR_VERSION" ] && echo "$MAJOR_VERSION" | grep -q '^[0-9]\+$'; then
-  if [ $((10#${MAJOR_VERSION})) -gt 1 ]; then
+  # Remove leading zeros to avoid octal interpretation in POSIX sh arithmetic
+  DECIMAL_VERSION="$(printf '%s' "$MAJOR_VERSION" | sed 's/^0*//')"
+  # Handle case where MAJOR_VERSION was all zeros
+  [ -z "$DECIMAL_VERSION" ] && DECIMAL_VERSION="0"
+  
+  if [ "$DECIMAL_VERSION" -gt 1 ]; then
     PACKAGE="$PACKAGE/v$MAJOR_VERSION"
   fi
 fi
