@@ -23,9 +23,6 @@ on:
   release:
     types:
       - created
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
-      - '**/v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   update-proxy-cache:
@@ -120,9 +117,6 @@ on:
   release:
     types:
       - created
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
-      - '**/v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   update-proxy-cache:
