@@ -1,28 +1,24 @@
-Go Proxy Cache Updater
-=======================
+# Go Proxy Cache Updater Action
 
-Note
------
+Automatically pull new Go module releases to your specified proxy cache when tags are created.
+This ensures your module is immediately available and documentation is updated on platforms like pkg.go.dev.
 
-This is a fork of `andrewslotin/go-proxy-pull-action`.
+## Features
 
-Go Proxy Cache Updater Action
------
+- Automatically triggers on new tag releases that match semantic version patterns
+- Supports standard version tags (`vX.Y.Z`) and submodule version tags (`submodule/path/vX.Y.Z`)
+- Customizable proxy configuration
+- Custom import path support
+- Simple to configure workflow
 
-This action ensures that a newly released version of a Go module is pulled to the specified proxy.
+## Usage
 
-Each time there is a new tag created in repository with a name that looks like a [semantic version](https://blog.golang.org/publishing-go-modules), the action gets triggered, pulling this version with `go get` via the
-configured proxy (<https://proxy.golang.org> by default).
+### Basic Configuration
 
-The action also recognizes the tags that version submodules stored within the same repository,
-e.g. `contrib/awesomity/v1.2.3`.
-
-Usage
------
-
-To renew the documentation on [pkg.go.dev](https://pkg.go.dev) create a new workflow file with following context:
+Create a new workflow file (e.g., `.github/workflows/go-proxy-pull.yml`) with the following content:
 
 ```yaml
+name: Go Proxy Cache Updater
 on:
   release:
     types:
@@ -32,54 +28,119 @@ on:
       - '**/v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
-  build:
-    name: Renew documentation
+  update-proxy-cache:
+    name: Update Go Proxy Cache
     runs-on: ubuntu-latest
     steps:
-    - name: Pull new module version
-      uses: nicholas-fedor/go-proxy-pull-action@master
+      - name: Pull new module version
+        uses: nicholas-fedor/go-proxy-pull-action@v1
 ```
 
-This will trigger the action each time whenever a new release is published for a tag that looks either like `vX.Y.Z` or
-`submodule/path/vX.Y.Z`.
+This workflow will trigger whenever a new release is published with a tag matching `vX.Y.Z` or `submodule/path/vX.Y.Z` format.
 
-Custom proxy
------
+## Inputs
 
-The action accepts `gopath` parameter to specify the URL of a self-hosted or any other Go proxy instead of <https://proxy.golang.org>. For example to make sure that [GoCenter](https://gocenter.io) has the latest version of your module provide `https://gocenter.io` as a value for `goproxy` parameter:
+### `goproxy`
+
+URL of the Go proxy to use for pulling the new module version.
+Use this to specify a self-hosted proxy or alternative public proxy.
+
+- **Type**: string
+- **Required**: false
+- **Default**: `https://proxy.golang.org`
+
+#### Example: Custom Proxy
 
 ```yaml
 - name: Pull new module version
-  uses: nicholas-fedor/go-proxy-pull-action@master
+  uses: nicholas-fedor/go-proxy-pull-action@v1
   with:
     goproxy: https://gocenter.io
 ```
 
-Custom import path
------
+### `import_path`
 
-In case your module uses custom import path, such as `example.com/myproject`, an attempt to download it using its GitHub repository URL will result in an error. In this case you need to provide the import path of your package as an input:
+Custom import path for your module.
+Use this if your module uses a custom domain instead of the GitHub repository URL.
+
+- **Type**: string
+- **Required**: false
+- **Default**: `github.com/<user>/<repo>`
+
+#### Example: Custom Import Path
 
 ```yaml
 - name: Pull new module version
-  uses: nicholas-fedor/go-proxy-pull-action@v1.0.7
+  uses: nicholas-fedor/go-proxy-pull-action@v1
   with:
-      import_path: example.com/myproject
+    import_path: example.com/myproject
 ```
 
-Why?
-----
+## Supported Tag Formats
 
-Although the Go module proxies are capable of pulling the missing versions on-demand, there are cases when
-this needs to be done before anyone has requested a new version via `go get` through this proxy. An example
-would be updating the `pkg.go.dev` documentation of your library upon release.
+The action supports the following tag formats:
 
-Currently the [pkg.go.dev](https://pkg.go.dev), unlike [godoc.org](https://godoc.org) does not track new
-module versions, displaying the last one it knows about as the latest one. The proposed workaround
-[suggests](https://github.com/golang/go/issues/37005#issuecomment-599541549) pulling the new version via
-`go get` after it has been released, which is now automated with this GitHub action.
+### Standard Version Tags
 
-License
--------
+- `v1.0.0`
+- `v2.1.3`
+- `v1.0.0-beta.1` (pre-release versions)
 
-The scripts and documentation in this project are released under the [MIT License](LICENSE).
+### Submodule Version Tags
+
+- `contrib/awesomity/v1.2.3`
+- `internal/utils/v0.5.0`
+
+## How It Works
+
+1. The action triggers on new release creation
+2. Extracts the version from the tag
+3. Determines the module import path (using default or custom value)
+4. Handles submodule paths from tags like `submodule/path/vX.Y.Z`
+5. Adds major version suffix for modules with major version > 1 (e.g., `/v2`)
+6. Uses `go get` to pull the new version to the configured proxy
+7. Updates the proxy cache with the new module version
+
+## Why Use This Action?
+
+While Go proxies typically pull modules on-demand, there are scenarios where proactive caching is beneficial:
+
+- **Documentation Updates**: Ensures pkg.go.dev documentation is immediately available for new releases
+- **Reliability**: Prevents proxy timeouts or failures when modules are first requested
+- **Performance**: Reduces latency for initial module downloads
+- **Availability**: Ensures your module is accessible from your proxy even if GitHub is experiencing issues
+
+## Configuration Example
+
+### Full Configuration with Custom Proxy and Import Path
+
+```yaml
+name: Go Proxy Cache Updater
+on:
+  release:
+    types:
+      - created
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - '**/v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  update-proxy-cache:
+    name: Update Go Proxy Cache
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull new module version
+        uses: nicholas-fedor/go-proxy-pull-action@v1
+        with:
+          goproxy: https://proxy.example.com
+          import_path: example.com/myproject
+```
+
+## License
+
+This project is released under the [MIT License](LICENSE).
+
+## Contributing
+
+Contributions are welcome!
+Please feel free to submit a Pull Request.
