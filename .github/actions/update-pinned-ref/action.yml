@@ -21,7 +21,6 @@ inputs:
   token:
     description: GitHub token for git and PR operations
     required: false
-    default: ${{ github.token }}
 
 runs:
   using: composite
@@ -38,7 +37,7 @@ runs:
         INPUTS_REPO_NAME: ${{ inputs.repo-name }}
         INPUTS_SHA: ${{ inputs.sha }}
         INPUTS_README_PATH: ${{ inputs.readme-path }}
-        GITHUB_TOKEN: ${{ inputs.token }}
+        GITHUB_TOKEN: ${{ inputs.token || github.token }}
       run: |
         "${{ github.action_path }}/update-ref.sh" \
           "${INPUTS_REPO_OWNER}" \
@@ -50,7 +49,7 @@ runs:
       id: cpr
       uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1
       with:
-        token: ${{ inputs.token }}
+        token: ${{ inputs.token || github.token }}
         commit-message: "docs(readme): update pinned action ref"
         title: "docs: update pinned action ref in README"
         body: |
@@ -65,7 +64,7 @@ runs:
       if: steps.cpr.outputs.pull-request-operation != ''
       uses: peter-evans/enable-pull-request-automerge@a660677d5469627102a1c1e11409dd063606628d
       with:
-        token: ${{ inputs.token }}
+        token: ${{ inputs.token || github.token }}
         pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
         merge-method: squash
 
