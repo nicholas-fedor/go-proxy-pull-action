@@ -120,5 +120,15 @@ describe("parseVersion", () => {
             const result = parseVersion("refs/tags/v02.0.0");
             expect(result.majorVersion).toBe(2);
         });
+
+        it("returns null majorVersion for just 'v' prefix with no number", () => {
+            const result = parseVersion("refs/tags/v");
+            expect(result.majorVersion).toBeNull();
+        });
+
+        it("returns null majorVersion for negative major version", () => {
+            const result = parseVersion("refs/tags/v-1.0.0");
+            expect(result.majorVersion).toBeNull();
+        });
     });
 });

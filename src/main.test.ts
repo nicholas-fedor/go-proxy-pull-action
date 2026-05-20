@@ -29,4 +29,14 @@ describe("sanitizeProxy", () => {
         const result = sanitizeProxy("https://user:pass@proxy.example.com:8080/path?q=1");
         expect(result).toBe("https://***:***@proxy.example.com:8080/path?q=1");
     });
+
+    it("redacts empty password with username", () => {
+        const result = sanitizeProxy("https://user:@proxy.example.com");
+        expect(result).toBe("https://***:***@proxy.example.com/");
+    });
+
+    it("handles URL with encoded characters in userinfo", () => {
+        const result = sanitizeProxy("https://us%40er:p%40ss@proxy.example.com");
+        expect(result).toBe("https://***:***@proxy.example.com/");
+    });
 });

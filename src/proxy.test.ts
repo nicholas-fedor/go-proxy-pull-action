@@ -72,12 +72,15 @@ describe("pullToProxy", () => {
 
         await pullToProxy("example.com/mod", "v2.0.0", "https://custom.proxy.io");
 
-        // First call: go mod init dummy
         expect(execSpy).toHaveBeenCalledTimes(2);
 
-        // Verify env is passed (second call is go get)
+        const firstCall = execSpy.mock.calls[0];
+        expect(firstCall![0]).toBe("go");
+        expect(firstCall![1]).toEqual(["mod", "init", "dummy"]);
+
         const secondCall = execSpy.mock.calls[1];
-        expect(secondCall).toBeDefined();
+        expect(secondCall![0]).toBe("go");
+        expect(secondCall![1]).toEqual(["get", "example.com/mod@v2.0.0"]);
         expect(secondCall![2]).toBeDefined();
         expect(secondCall![2]!.env).toMatchObject({
             GO111MODULE: "on",
