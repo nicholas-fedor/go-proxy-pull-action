@@ -1,0 +1,20 @@
+# Local dependencies
+node_modules/
+
+# Testing Artifacts
+coverage/
+lcov-report/
+*.tmp
+
+# IDE
+.vscode/
+.idea/
+
+# Explicitly allow required files for this GitHub Action
+# (protects against overly broad parent .gitignore rules)
+!dist/
+!action.yml
+!package.json
+!bun.lock
+!README.md
+!.gitignore
