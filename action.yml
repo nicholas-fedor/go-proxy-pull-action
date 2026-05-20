@@ -57,8 +57,8 @@ runs:
         token: ${{ inputs.token }}
         go-download-base-url: ${{ inputs.go-download-base-url }}
     - name: Pull new module version to proxy
-      shell: node24
-      run: require('${{ github.action_path }}/dist/index.js')
+      shell: bash
+      run: node '${{ github.action_path }}/dist/index.js'
       env:
         INPUT_GOPROXY: ${{ inputs.goproxy }}
         INPUT_IMPORT_PATH: ${{ inputs.import_path }}
