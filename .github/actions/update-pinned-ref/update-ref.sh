@@ -37,6 +37,10 @@ fetch_sha() {
     local sha="$3"
 
     if [[ -n "$sha" ]]; then
+        if [[ ! "$sha" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            echo "Error: Invalid SHA format: $sha" >&2
+            return 1
+        fi
         echo "$sha"
         return 0
     fi
