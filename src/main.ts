@@ -49,7 +49,7 @@ async function main(): Promise<void> {
         const result = await pullToProxy(pkg.importPath, pkg.version, goproxy);
 
         if (result.exitCode !== 0) {
-            core.setFailed(`go get failed for ${pkg.importPath}@${pkg.version}`);
+            core.setFailed(`go get failed for ${pkg.importPath}@${pkg.version} (exit code ${result.exitCode})`);
             return;
         }
 

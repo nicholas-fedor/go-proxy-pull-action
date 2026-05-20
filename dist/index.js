@@ -24295,7 +24295,7 @@ async function main() {
     info(`Proxy: ${sanitizeProxy(goproxy)}`);
     const result = await pullToProxy(pkg.importPath, pkg.version, goproxy);
     if (result.exitCode !== 0) {
-      setFailed(`go get failed for ${pkg.importPath}@${pkg.version}`);
+      setFailed(`go get failed for ${pkg.importPath}@${pkg.version} (exit code ${result.exitCode})`);
       return;
     }
     notice(`Successfully pulled ${pkg.importPath}@${pkg.version} to proxy`);
