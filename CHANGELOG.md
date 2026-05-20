@@ -14,7 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chores
 
+- Pin dependencies by @renovate[bot] in [#53](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/53)
+- Rebuild dist/index.js by @github-actions[bot] in [#52](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/52)
 - Update commitlint monorepo to v21 by @renovate[bot] in [#54](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/54)
+
+### New Contributors
+
+- @github-actions[bot] made their first contribution in [#52](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/52)
 
 ## [1.0.9] - 2026-05-07
 
