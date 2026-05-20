@@ -24260,6 +24260,17 @@ async function pullToProxy(importPath, version, goproxy) {
 }
 
 // src/main.ts
+function sanitizeProxy(goproxy) {
+  try {
+    const proxyUrl = new URL(goproxy);
+    if (proxyUrl.username || proxyUrl.password) {
+      proxyUrl.username = "***";
+      proxyUrl.password = "***";
+      return proxyUrl.toString();
+    }
+  } catch {}
+  return goproxy;
+}
 async function main() {
   try {
     const { goproxy, importPath } = parseInputs();
@@ -24281,7 +24292,7 @@ async function main() {
     }
     const pkg = resolvePackage(versionInfo, importPath, repository);
     info(`Package: ${pkg.importPath}@${pkg.version}`);
-    info(`Proxy: ${goproxy}`);
+    info(`Proxy: ${sanitizeProxy(goproxy)}`);
     const result = await pullToProxy(pkg.importPath, pkg.version, goproxy);
     if (result.exitCode !== 0) {
       setFailed(`go get failed for ${pkg.importPath}@${pkg.version}`);
@@ -24297,3 +24308,6 @@ async function main() {
   }
 }
 main();
+export {
+  sanitizeProxy
+};

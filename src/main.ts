@@ -4,6 +4,20 @@ import { parseVersion } from "./version.js";
 import { resolvePackage } from "./package.js";
 import { pullToProxy } from "./proxy.js";
 
+export function sanitizeProxy(goproxy: string): string {
+    try {
+        const proxyUrl = new URL(goproxy);
+        if (proxyUrl.username || proxyUrl.password) {
+            proxyUrl.username = "***";
+            proxyUrl.password = "***";
+            return proxyUrl.toString();
+        }
+    } catch {
+        // not a valid URL, return as-is
+    }
+    return goproxy;
+}
+
 async function main(): Promise<void> {
     try {
         const { goproxy, importPath } = parseInputs();
@@ -29,7 +43,8 @@ async function main(): Promise<void> {
 
         const pkg = resolvePackage(versionInfo, importPath, repository);
         core.info(`Package: ${pkg.importPath}@${pkg.version}`);
-        core.info(`Proxy: ${goproxy}`);
+
+        core.info(`Proxy: ${sanitizeProxy(goproxy)}`);
 
         const result = await pullToProxy(pkg.importPath, pkg.version, goproxy);
 
