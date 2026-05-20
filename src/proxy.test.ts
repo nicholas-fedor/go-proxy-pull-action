@@ -29,7 +29,11 @@ describe("pullToProxy", () => {
         const io = await import("@actions/io");
 
         spyOn(core, "info").mockImplementation(() => { });
-        spyOn(exec, "exec").mockImplementation(async () => 1);
+        let callCount = 0;
+        spyOn(exec, "exec").mockImplementation(async () => {
+            callCount++;
+            return callCount === 1 ? 0 : 1;
+        });
         spyOn(io, "rmRF").mockImplementation(async () => { });
 
         const result = await pullToProxy("github.com/user/repo", "v1.0.0", "https://proxy.golang.org");
