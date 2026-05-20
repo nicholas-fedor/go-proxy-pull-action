@@ -24223,7 +24223,10 @@ function resolvePackage(versionInfo, importPath, repository) {
     pkg = `${pkg}/${versionInfo.submodulePath}`;
   }
   if (versionInfo.majorVersion !== null && versionInfo.majorVersion > 1) {
-    pkg = `${pkg}/v${versionInfo.majorVersion}`;
+    const suffix = `/v${versionInfo.majorVersion}`;
+    if (!pkg.endsWith(suffix)) {
+      pkg = `${pkg}${suffix}`;
+    }
   }
   return {
     importPath: pkg,

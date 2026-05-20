@@ -53,6 +53,30 @@ describe("resolvePackage", () => {
             expect(result.importPath).toBe("github.com/user/repo/v3");
         });
 
+        it("does not duplicate version suffix when import path already ends with /v2", () => {
+            const versionInfo: VersionInfo = {
+                tag: "v2.0.0",
+                version: "v2.0.0",
+                isSubmodule: false,
+                submodulePath: "",
+                majorVersion: 2,
+            };
+            const result = resolvePackage(versionInfo, "example.com/myproject/v2", "user/repo");
+            expect(result.importPath).toBe("example.com/myproject/v2");
+        });
+
+        it("does not duplicate version suffix for v3", () => {
+            const versionInfo: VersionInfo = {
+                tag: "v3.1.0",
+                version: "v3.1.0",
+                isSubmodule: false,
+                submodulePath: "",
+                majorVersion: 3,
+            };
+            const result = resolvePackage(versionInfo, "example.com/lib/v3", "user/repo");
+            expect(result.importPath).toBe("example.com/lib/v3");
+        });
+
         it("does not append suffix for major version 1", () => {
             const versionInfo: VersionInfo = {
                 tag: "v1.2.3",
