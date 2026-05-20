@@ -11,7 +11,7 @@ on:
       repo-name:
         description: Repository name
         required: true
-        default: go-proxy-pull-action-action
+        default: go-proxy-pull-action
       sha:
         description: Specific commit SHA to use (optional, will fetch latest if not provided)
         required: false
