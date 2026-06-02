@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chores
 
+- Update actions/checkout action to v6.0.3 by @renovate[bot] in [#69](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/69)
 - Update github/codeql-action action to v4.36.1 by @renovate[bot] in [#67](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/67)
 - Update commitlint monorepo to v21.0.2 by @renovate[bot] in [#65](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/65)
 - Lock file maintenance by @renovate[bot] in [#63](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/63)
