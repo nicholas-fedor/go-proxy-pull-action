@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update step-security/harden-runner action to v2.19.4 by @renovate[bot] in [#58](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/58)
 - Update dependency @types/node to v25.9.0 by @renovate[bot] in [#56](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/56)
 
+### Fixed
+
+- Add semantic-release git plugin and fix HTTP/2 stream handling by @nicholas-fedor in [#80](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/80)
+
 ## [1.1.0] - 2026-05-20
 
 ### Changed
