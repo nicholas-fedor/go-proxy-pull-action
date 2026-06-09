@@ -23193,7 +23193,7 @@ if (process.env.NODE_DEBUG && /\btunnel\b/.test(process.env.NODE_DEBUG)) {
 }
 
 // node_modules/undici/index.js
-var __filename = "/home/nick/Projects/Forks/go-proxy-pull-action/node_modules/undici/index.js";
+var __filename = "/home/runner/work/go-proxy-pull-action/go-proxy-pull-action/node_modules/undici/index.js";
 var Client = require_client();
 var Dispatcher = require_dispatcher();
 var Pool = require_pool();
