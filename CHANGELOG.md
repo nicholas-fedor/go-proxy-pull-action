@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chores
 
+- Update semantic-release monorepo to v25.0.4 by @renovate[bot] in [#83](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/83)
+- Rebuild dist/index.js by @github-actions[bot] in [#81](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/81)
+
+## [1.1.1] - 2026-06-09
+
+### Chores
+
 - Update dependency @types/node to v25.9.2 by @renovate[bot] in [#78](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/78)
 - Rebuild dist/index.js by @github-actions[bot] in [#76](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/76)
 - Lock file maintenance by @renovate[bot] in [#75](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/75)
@@ -211,7 +218,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Compare Releases
 
-- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.0...HEAD)
+- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.1...HEAD)
+- [1.1.1](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.0...v1.1.1)
 - [1.1.0](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.0.9...v1.1.0)
 - [1.0.9](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.0.8...v1.0.9)
 - [1.0.8](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.0.7...v1.0.8)
