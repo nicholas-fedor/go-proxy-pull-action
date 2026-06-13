@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chores
 
+- Update semantic-release monorepo to v25.0.5 by @renovate[bot] in [#85](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/85)
 - Update semantic-release monorepo to v25.0.4 by @renovate[bot] in [#83](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/83)
 - Rebuild dist/index.js by @github-actions[bot] in [#81](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/81)
 
