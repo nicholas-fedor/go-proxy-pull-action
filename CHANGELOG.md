@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chores
 
+- Lock file maintenance by @renovate[bot] in [#93](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/93)
 - Update actions/checkout action to v7 by @renovate[bot] in [#91](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/91)
 
 ## [1.1.4] - 2026-06-15
