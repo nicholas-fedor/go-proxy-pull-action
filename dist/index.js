@@ -2342,6 +2342,7 @@ var require_dispatcher_base = __commonJS((exports, module) => {
     }
     get webSocketOptions() {
       return {
+        maxFragments: this[kWebSocketOptions].maxFragments ?? 131072,
         maxPayloadSize: this[kWebSocketOptions].maxPayloadSize ?? 128 * 1024 * 1024
       };
     }
@@ -5760,6 +5761,29 @@ ${normalizeLinefeeds(value)}\r
         return consumeBody(this, (bytes) => {
           return new Uint8Array(bytes);
         }, instance, getInternalState);
+      },
+      textStream() {
+        const this_ = getInternalState(this);
+        if (bodyUnusable(this_)) {
+          throw new TypeError("Body is unusable: Body has already been read");
+        }
+        if (this_.body == null) {
+          let controller;
+          const emptyStream = new ReadableStream({
+            start: (c) => {
+              controller = c;
+            },
+            pull: () => Promise.resolve(),
+            cancel: () => Promise.resolve()
+          }, {
+            size: () => 1
+          });
+          controller.close();
+          return emptyStream;
+        }
+        const stream = this_.body.stream;
+        const decoder = new TextDecoderStream("UTF-8");
+        return stream.pipeThrough(decoder);
       }
     };
     return methods;
@@ -5871,6 +5895,9 @@ var require_client_h1 = __commonJS((exports, module) => {
   var EMPTY_BUF = Buffer.alloc(0);
   var FastBuffer = Buffer[Symbol.species];
   var removeAllListeners = util2.removeAllListeners;
+  var kIdleSocketValidation = Symbol("kIdleSocketValidation");
+  var kIdleSocketValidationTimeout = Symbol("kIdleSocketValidationTimeout");
+  var kSocketUsed = Symbol("kSocketUsed");
   var extractBody;
   function lazyllhttp() {
     const llhttpWasmData = process.env.JEST_WORKER_ID ? require_llhttp_wasm() : undefined;
@@ -6108,6 +6135,10 @@ var require_client_h1 = __commonJS((exports, module) => {
       if (socket.destroyed) {
         return -1;
       }
+      if (client[kRunning] === 0) {
+        util2.destroy(socket, new SocketError("bad response", util2.getSocketInfo(socket)));
+        return -1;
+      }
       const request = client[kQueue][client[kRunningIdx]];
       if (!request) {
         return -1;
@@ -6193,6 +6224,10 @@ var require_client_h1 = __commonJS((exports, module) => {
     onHeadersComplete(statusCode, upgrade, shouldKeepAlive) {
       const { client, socket, headers, statusText } = this;
       if (socket.destroyed) {
+        return -1;
+      }
+      if (client[kRunning] === 0) {
+        util2.destroy(socket, new SocketError("bad response", util2.getSocketInfo(socket)));
         return -1;
       }
       const request = client[kQueue][client[kRunningIdx]];
@@ -6317,6 +6352,7 @@ var require_client_h1 = __commonJS((exports, module) => {
       }
       request.onResponseEnd(headers);
       client[kQueue][client[kRunningIdx]++] = null;
+      socket[kSocketUsed] = client[kPending] === 0;
       if (socket[kWriting]) {
         assert2(client[kRunning] === 0);
         util2.destroy(socket, new InformationalError("reset"));
@@ -6370,6 +6406,9 @@ var require_client_h1 = __commonJS((exports, module) => {
     socket[kWriting] = false;
     socket[kReset] = false;
     socket[kBlocking] = false;
+    socket[kIdleSocketValidation] = 0;
+    socket[kIdleSocketValidationTimeout] = null;
+    socket[kSocketUsed] = false;
     socket[kParser] = new Parser(client, socket, llhttpInstance);
     util2.addListener(socket, "error", onHttpSocketError);
     util2.addListener(socket, "readable", onHttpSocketReadable);
@@ -6398,7 +6437,7 @@ var require_client_h1 = __commonJS((exports, module) => {
         return socket.destroyed;
       },
       busy(request) {
-        if (socket[kWriting] || socket[kReset] || socket[kBlocking]) {
+        if (socket[kWriting] || socket[kReset] || socket[kBlocking] || socket[kIdleSocketValidation] === 1) {
           return true;
         }
         if (request) {
@@ -6446,6 +6485,7 @@ var require_client_h1 = __commonJS((exports, module) => {
   }
   function onHttpSocketClose() {
     const parser = this[kParser];
+    clearIdleSocketValidation(this);
     if (parser) {
       if (!this[kError] && parser.statusCode && !parser.shouldKeepAlive) {
         this[kError] = parser.finish() || this[kError];
@@ -6477,6 +6517,24 @@ var require_client_h1 = __commonJS((exports, module) => {
   function onSocketClose() {
     this[kClosed] = true;
   }
+  function clearIdleSocketValidation(socket) {
+    if (socket[kIdleSocketValidationTimeout]) {
+      clearTimeout(socket[kIdleSocketValidationTimeout]);
+      socket[kIdleSocketValidationTimeout] = null;
+    }
+    socket[kIdleSocketValidation] = 0;
+  }
+  function scheduleIdleSocketValidation(client, socket) {
+    socket[kIdleSocketValidation] = 1;
+    socket[kIdleSocketValidationTimeout] = setTimeout(() => {
+      socket[kIdleSocketValidationTimeout] = null;
+      socket[kIdleSocketValidation] = 2;
+      if (client[kSocket] === socket && !socket.destroyed) {
+        client[kResume]();
+      }
+    }, 0);
+    socket[kIdleSocketValidationTimeout].unref?.();
+  }
   function resumeH1(client) {
     const socket = client[kSocket];
     if (socket && !socket.destroyed) {
@@ -6488,6 +6546,29 @@ var require_client_h1 = __commonJS((exports, module) => {
       } else if (socket[kNoRef] && socket.ref) {
         socket.ref();
         socket[kNoRef] = false;
+      }
+      if (client[kRunning] === 0 && client[kPending] > 0 && socket[kSocketUsed]) {
+        if (socket[kIdleSocketValidation] === 0) {
+          scheduleIdleSocketValidation(client, socket);
+          socket[kParser].readMore();
+          if (socket.destroyed) {
+            return;
+          }
+          return;
+        }
+        if (socket[kIdleSocketValidation] === 1) {
+          socket[kParser].readMore();
+          if (socket.destroyed) {
+            return;
+          }
+          return;
+        }
+      }
+      if (client[kRunning] === 0) {
+        socket[kParser].readMore();
+        if (socket.destroyed) {
+          return;
+        }
       }
       if (client[kSize] === 0) {
         if (socket[kParser].timeoutType !== TIMEOUT_KEEP_ALIVE) {
@@ -6541,6 +6622,7 @@ var require_client_h1 = __commonJS((exports, module) => {
       process.emitWarning(new RequestContentLengthMismatchError);
     }
     const socket = client[kSocket];
+    clearIdleSocketValidation(socket);
     const abort = (err) => {
       if (request.aborted || request.completed) {
         return;
@@ -6940,6 +7022,7 @@ var require_client_h2 = __commonJS((exports, module) => {
     kSize,
     kHTTPContext,
     kClosed,
+    kKeepAliveDefaultTimeout,
     kHeadersTimeout,
     kBodyTimeout,
     kEnableConnectProtocol,
@@ -7032,6 +7115,17 @@ var require_client_h2 = __commonJS((exports, module) => {
   function requeueUnsentRequest(client, request) {
     client[kQueue].splice(client[kPendingIdx] + 1, 0, request);
   }
+  function completeRequest(client, request, resetPendingIdx = false) {
+    const index = client[kQueue].indexOf(request, client[kRunningIdx]);
+    if (index === -1 || index >= client[kPendingIdx]) {
+      return;
+    }
+    client[kQueue].splice(index, 1);
+    client[kPendingIdx]--;
+    if (resetPendingIdx && client[kPendingIdx] < client[kRunningIdx]) {
+      client[kPendingIdx] = client[kRunningIdx];
+    }
+  }
   function canRetryRequestAfterGoAway(request) {
     const { body } = request;
     return body == null || util2.isBuffer(body) || util2.isBlobLike(body);
@@ -7062,6 +7156,7 @@ var require_client_h2 = __commonJS((exports, module) => {
     session[kClient] = client;
     session[kSocket] = socket;
     session[kHTTP2SessionState] = {
+      idleTimeout: null,
       ping: {
         interval: client[kPingInterval] === 0 ? null : setInterval(onHttp2SendPing, client[kPingInterval], session).unref()
       }
@@ -7114,8 +7209,6 @@ var require_client_h2 = __commonJS((exports, module) => {
         }
         if (request != null) {
           if (client[kRunning] > 0) {
-            if (request.idempotent === false)
-              return true;
             if ((request.upgrade === "websocket" || request.method === "CONNECT") && session[kRemoteSettings] === false)
               return true;
             if (util2.bodyLength(request.body) !== 0 && (util2.isStream(request.body) || util2.isAsyncIterable(request.body) || util2.isFormDataLike(request.body)))
@@ -7130,15 +7223,54 @@ var require_client_h2 = __commonJS((exports, module) => {
   }
   function resumeH2(client) {
     const socket = client[kSocket];
+    const session = client[kHTTP2Session];
     if (socket?.destroyed === false) {
       if (client[kSize] === 0 || client[kMaxConcurrentStreams] === 0) {
         socket.unref();
-        client[kHTTP2Session].unref();
+        session.unref();
       } else {
         socket.ref();
-        client[kHTTP2Session].ref();
+        session.ref();
+      }
+      if (client[kSize] === 0 && session[kOpenStreams] === 0) {
+        setHttp2IdleTimeout(session);
+      } else {
+        clearHttp2IdleTimeout(session);
       }
     }
+  }
+  function clearHttp2IdleTimeout(session) {
+    const state = session[kHTTP2SessionState];
+    if (state?.idleTimeout != null) {
+      clearTimeout(state.idleTimeout);
+      state.idleTimeout = null;
+    }
+  }
+  function setHttp2IdleTimeout(session) {
+    const client = session[kClient];
+    if (client[kHTTP2Session] !== session || session.closed || session.destroyed) {
+      return;
+    }
+    if (session[kOpenStreams] !== 0 || client[kSize] !== 0) {
+      clearHttp2IdleTimeout(session);
+      return;
+    }
+    const state = session[kHTTP2SessionState];
+    if (state.idleTimeout == null) {
+      state.idleTimeout = setTimeout(onHttp2SessionIdleTimeout, client[kKeepAliveDefaultTimeout], session).unref();
+    }
+  }
+  function onHttp2SessionIdleTimeout(session) {
+    const client = session[kClient];
+    const socket = session[kSocket];
+    const state = session[kHTTP2SessionState];
+    state.idleTimeout = null;
+    if (client[kHTTP2Session] !== session || session[kOpenStreams] !== 0 || client[kSize] !== 0 || session.closed || session.destroyed) {
+      return;
+    }
+    const err = new InformationalError("socket idle timeout");
+    socket[kError] = err;
+    util2.destroy(socket, err);
   }
   function applyConnectionWindowSize(connectionWindowSize) {
     try {
@@ -7227,6 +7359,7 @@ var require_client_h2 = __commonJS((exports, module) => {
       client[kHTTPContext] = null;
       client[kHTTP2Session] = null;
     }
+    clearHttp2IdleTimeout(this);
     if (!this.closed && !this.destroyed) {
       this.close();
     }
@@ -7242,6 +7375,7 @@ var require_client_h2 = __commonJS((exports, module) => {
       client[kHTTPContext] = null;
       client[kHTTP2Session] = null;
     }
+    clearHttp2IdleTimeout(this);
     if (state.ping.interval != null) {
       clearInterval(state.ping.interval);
       state.ping.interval = null;
@@ -7251,7 +7385,9 @@ var require_client_h2 = __commonJS((exports, module) => {
       const requests = client[kQueue].splice(client[kRunningIdx]);
       for (let i = 0;i < requests.length; i++) {
         const request = requests[i];
-        util2.errorRequest(client, request, err);
+        if (request != null) {
+          util2.errorRequest(client, request, err);
+        }
       }
     }
   }
@@ -7293,6 +7429,7 @@ var require_client_h2 = __commonJS((exports, module) => {
     session[kOpenStreams] -= 1;
     if (session[kOpenStreams] === 0) {
       session.unref();
+      setHttp2IdleTimeout(session);
     }
   }
   function onUpgradeStreamClose() {
@@ -7420,6 +7557,7 @@ var require_client_h2 = __commonJS((exports, module) => {
     stream.once("end", onUpgradeStreamEnd);
     stream.on("timeout", onUpgradeStreamTimeout);
     stream.once("close", onUpgradeStreamClose);
+    clearHttp2IdleTimeout(session);
     ++session[kOpenStreams];
     stream.setTimeout(headersTimeout);
   }
@@ -7443,10 +7581,7 @@ var require_client_h2 = __commonJS((exports, module) => {
         return;
       }
       requestFinalized = true;
-      client[kQueue][client[kRunningIdx]++] = null;
-      if (resetPendingIdx) {
-        client[kPendingIdx] = client[kRunningIdx];
-      }
+      completeRequest(client, request, resetPendingIdx);
       client[kResume]();
     };
     const abort = (err, resetPendingIdx = false) => {
@@ -7599,6 +7734,7 @@ var require_client_h2 = __commonJS((exports, module) => {
     stream[kHTTP2Stream] = true;
     stream[kRequestStreamState] = state;
     state.stream = stream;
+    clearHttp2IdleTimeout(session);
     ++session[kOpenStreams];
     stream.setTimeout(headersTimeout);
     stream[kHTTP2Session] = session;
@@ -8145,7 +8281,9 @@ var require_client = __commonJS((exports, module) => {
         const requests = this[kQueue].splice(this[kPendingIdx]);
         for (let i = 0;i < requests.length; i++) {
           const request = requests[i];
-          util2.errorRequest(this, request, err);
+          if (request != null) {
+            util2.errorRequest(this, request, err);
+          }
         }
         const callback = () => {
           if (this[kClosedResolve]) {
@@ -8170,7 +8308,9 @@ var require_client = __commonJS((exports, module) => {
       const requests = client[kQueue].splice(client[kRunningIdx]);
       for (let i = 0;i < requests.length; i++) {
         const request = requests[i];
-        util2.errorRequest(client, request, err);
+        if (request != null) {
+          util2.errorRequest(client, request, err);
+        }
       }
       assert2(client[kSize] === 0);
     }
@@ -9703,6 +9843,7 @@ var require_socks5_proxy_agent = __commonJS((exports, module) => {
   var kProxyProtocol = Symbol("proxy protocol");
   var kPools = Symbol("pools");
   var kConnector = Symbol("connector");
+  var kRequestTls = Symbol("request tls settings");
   var experimentalWarningEmitted = false;
 
   class Socks5ProxyAgent extends DispatcherBase {
@@ -9722,6 +9863,7 @@ var require_socks5_proxy_agent = __commonJS((exports, module) => {
       this[kProxyUrl] = url;
       this[kProxyHeaders] = options.headers || {};
       this[kProxyProtocol] = options.proxyTls ? "https:" : "http:";
+      this[kRequestTls] = options.requestTls;
       this[kProxyAuth] = {
         username: options.username || (url.username ? decodeURIComponent(url.username) : null),
         password: options.password || (url.password ? decodeURIComponent(url.password) : null)
@@ -9823,9 +9965,9 @@ var require_socks5_proxy_agent = __commonJS((exports, module) => {
                   }
                   debug2("upgrading to TLS");
                   finalSocket = tls2.connect({
+                    ...this[kRequestTls],
                     socket,
-                    servername: targetHost,
-                    ...connectOpts.tls || {}
+                    servername: this[kRequestTls]?.servername || targetHost
                   });
                   const tlsReady = Promise.withResolvers();
                   finalSocket.once("secureConnect", tlsReady.resolve);
@@ -9998,7 +10140,8 @@ var require_proxy_agent = __commonJS((exports, module) => {
             factory: agentFactory,
             username: opts.username || username,
             password: opts.password || password,
-            proxyTls: opts.proxyTls
+            proxyTls: opts.proxyTls,
+            requestTls: opts.requestTls
           });
         }
         if (!this[kTunnelProxy] && protocol2 === "http:" && this[kProxy].protocol === "http:") {
@@ -14481,6 +14624,9 @@ var require_cache = __commonJS((exports, module) => {
                   lastHeader = lastHeader.substring(0, lastHeader.length - 1);
                   headers[headers.length - 1] = lastHeader;
                 }
+                for (let j = 0;j < headers.length; j++) {
+                  headers[j] = headers[j].trim();
+                }
                 if (key in output) {
                   output[key] = output[key].concat(headers);
                 } else {
@@ -14488,10 +14634,11 @@ var require_cache = __commonJS((exports, module) => {
                 }
               }
             } else {
+              const fieldName = value.trim();
               if (key in output) {
-                output[key] = output[key].concat(value);
+                output[key] = output[key].concat(fieldName);
               } else {
-                output[key] = [value];
+                output[key] = [fieldName];
               }
             }
             break;
@@ -20122,7 +20269,6 @@ var require_parse = __commonJS((exports, module) => {
   var { maxNameValuePairSize, maxAttributeValueSize } = require_constants4();
   var { isCTLExcludingHtab } = require_util4();
   var assert2 = __require("node:assert");
-  var { unescape: qsUnescape } = __require("node:querystring");
   function parseSetCookie(header) {
     if (isCTLExcludingHtab(header)) {
       return null;
@@ -20152,7 +20298,7 @@ var require_parse = __commonJS((exports, module) => {
     }
     return {
       name,
-      value: qsUnescape(value),
+      value,
       ...parseUnparsedAttributes(unparsedAttributes)
     };
   }
@@ -20218,18 +20364,14 @@ var require_parse = __commonJS((exports, module) => {
     } else if (attributeNameLowercase === "httponly") {
       cookieAttributeList.httpOnly = true;
     } else if (attributeNameLowercase === "samesite") {
-      let enforcement = "Default";
       const attributeValueLowercase = attributeValue.toLowerCase();
-      if (attributeValueLowercase.includes("none")) {
-        enforcement = "None";
+      if (attributeValueLowercase === "none") {
+        cookieAttributeList.sameSite = "None";
+      } else if (attributeValueLowercase === "strict") {
+        cookieAttributeList.sameSite = "Strict";
+      } else if (attributeValueLowercase === "lax") {
+        cookieAttributeList.sameSite = "Lax";
       }
-      if (attributeValueLowercase.includes("strict")) {
-        enforcement = "Strict";
-      }
-      if (attributeValueLowercase.includes("lax")) {
-        enforcement = "Lax";
-      }
-      cookieAttributeList.sameSite = enforcement;
     } else {
       cookieAttributeList.unparsed ??= [];
       cookieAttributeList.unparsed.push(`${attributeName}=${attributeValue}`);
@@ -21183,11 +21325,13 @@ var require_receiver = __commonJS((exports, module) => {
     #fragments = [];
     #extensions;
     #handler;
+    #maxFragments;
     #maxPayloadSize;
     constructor(handler, extensions, options = {}) {
       super();
       this.#handler = handler;
       this.#extensions = extensions == null ? new Map : extensions;
+      this.#maxFragments = options.maxFragments ?? 0;
       this.#maxPayloadSize = options.maxPayloadSize ?? 0;
       if (this.#extensions.has("permessage-deflate")) {
         this.#extensions.set("permessage-deflate", new PerMessageDeflate(extensions, options));
@@ -21200,7 +21344,7 @@ var require_receiver = __commonJS((exports, module) => {
       this.run(callback);
     }
     #validatePayloadLength() {
-      if (this.#maxPayloadSize > 0 && !isControlFrame(this.#info.opcode) && this.#info.payloadLength > this.#maxPayloadSize) {
+      if (this.#maxPayloadSize > 0 && !isControlFrame(this.#info.opcode) && this.#info.payloadLength + this.#fragmentsBytes > this.#maxPayloadSize) {
         failWebsocketConnection(this.#handler, 1009, "Payload size exceeds maximum allowed size");
         return false;
       }
@@ -21312,7 +21456,9 @@ var require_receiver = __commonJS((exports, module) => {
             this.#state = parserStates.INFO;
           } else {
             if (!this.#info.compressed) {
-              this.writeFragments(body);
+              if (!this.writeFragments(body)) {
+                return;
+              }
               if (!this.#info.fragmented && this.#info.fin) {
                 websocketMessageReceived(this.#handler, this.#info.binaryType, this.consumeFragments());
               }
@@ -21324,7 +21470,9 @@ var require_receiver = __commonJS((exports, module) => {
                   failWebsocketConnection(this.#handler, code, error.message);
                   return;
                 }
-                this.writeFragments(data);
+                if (!this.writeFragments(data)) {
+                  return;
+                }
                 if (this.#maxPayloadSize > 0 && this.#fragmentsBytes > this.#maxPayloadSize) {
                   failWebsocketConnection(this.#handler, 1009, new MessageSizeExceededError().message);
                   return;
@@ -21382,8 +21530,13 @@ var require_receiver = __commonJS((exports, module) => {
       }
     }
     writeFragments(fragment) {
+      if (this.#maxFragments > 0 && this.#fragments.length === this.#maxFragments) {
+        failWebsocketConnection(this.#handler, 1008, "Too many message fragments");
+        return false;
+      }
       this.#fragmentsBytes += fragment.length;
       this.#fragments.push(fragment);
+      return true;
     }
     consumeFragments() {
       const fragments = this.#fragments;
@@ -21810,8 +21963,10 @@ var require_websocket = __commonJS((exports, module) => {
     }
     #onConnectionEstablished(response, parsedExtensions) {
       this.#handler.socket = response.socket;
+      const maxFragments = this.#handler.controller.dispatcher?.webSocketOptions?.maxFragments;
       const maxPayloadSize = this.#handler.controller.dispatcher?.webSocketOptions?.maxPayloadSize;
       const parser = new ByteParser(this.#handler, parsedExtensions, {
+        maxFragments,
         maxPayloadSize
       });
       parser.on("drain", () => this.#handler.onParserDrain());
@@ -22211,7 +22366,12 @@ var require_websocketstream = __commonJS((exports, module) => {
     }
     #onConnectionEstablished(response, parsedExtensions) {
       this.#handler.socket = response.socket;
-      const parser = new ByteParser(this.#handler, parsedExtensions);
+      const maxFragments = this.#handler.controller.dispatcher?.webSocketOptions?.maxFragments;
+      const maxPayloadSize = this.#handler.controller.dispatcher?.webSocketOptions?.maxPayloadSize;
+      const parser = new ByteParser(this.#handler, parsedExtensions, {
+        maxFragments,
+        maxPayloadSize
+      });
       parser.on("drain", () => this.#handler.onParserDrain());
       parser.on("error", (err) => this.#handler.onParserError(err));
       this.#parser = parser;
@@ -22345,6 +22505,7 @@ var require_websocketstream = __commonJS((exports, module) => {
 
 // node_modules/undici/lib/web/eventsource/util.js
 var require_util6 = __commonJS((exports, module) => {
+  var { makeRequest } = require_request2();
   function isValidLastEventId(value) {
     return value.indexOf("\x00") === -1;
   }
@@ -22357,9 +22518,27 @@ var require_util6 = __commonJS((exports, module) => {
     }
     return true;
   }
+  function createPotentialCORSRequest(url, destination, corsAttributeState, sameOriginFallback) {
+    let mode = corsAttributeState === "no cors" ? "no-cors" : "cors";
+    if (sameOriginFallback && mode === "no-cors") {
+      mode = "same-origin";
+    }
+    let credentialsMode = "include";
+    if (corsAttributeState === "anonymous") {
+      credentialsMode = "same-origin";
+    }
+    return makeRequest({
+      urlList: [url],
+      destination,
+      mode,
+      credentials: credentialsMode,
+      useCredentials: true
+    });
+  }
   module.exports = {
     isValidLastEventId,
-    isASCIINumber
+    isASCIINumber,
+    createPotentialCORSRequest
   };
 });
 
@@ -22671,7 +22850,6 @@ ${value}`;
 var require_eventsource = __commonJS((exports, module) => {
   var { pipeline } = __require("node:stream");
   var { fetching } = require_fetch();
-  var { makeRequest } = require_request2();
   var { webidl } = require_webidl();
   var { EventSourceStream } = require_eventsource_stream();
   var { parseMIMEType } = require_data_url();
@@ -22679,6 +22857,7 @@ var require_eventsource = __commonJS((exports, module) => {
   var { isNetworkError } = require_response();
   var { kEnumerableProperty } = require_util();
   var { environmentSettingsObject } = require_util2();
+  var { createPotentialCORSRequest } = require_util6();
   var experimentalWarned = false;
   var defaultReconnectionTime = 3000;
   var CONNECTING = 0;
@@ -22732,19 +22911,12 @@ var require_eventsource = __commonJS((exports, module) => {
         corsAttributeState = USE_CREDENTIALS;
         this.#withCredentials = true;
       }
-      const initRequest = {
-        redirect: "follow",
-        keepalive: true,
-        mode: "cors",
-        credentials: corsAttributeState === "anonymous" ? "same-origin" : "omit",
-        referrer: "no-referrer"
-      };
-      initRequest.client = environmentSettingsObject.settingsObject;
-      initRequest.headersList = [["accept", { name: "accept", value: "text/event-stream" }]];
-      initRequest.cache = "no-store";
-      initRequest.initiator = "other";
-      initRequest.urlList = [new URL(this.#url)];
-      this.#request = makeRequest(initRequest);
+      const request = createPotentialCORSRequest(urlRecord, "", corsAttributeState);
+      request.client = environmentSettingsObject.settingsObject;
+      request.headersList.set("Accept", "text/event-stream");
+      request.cache = "no-store";
+      request.initiator = "other";
+      this.#request = request;
       this.#connect();
     }
     get readyState() {
