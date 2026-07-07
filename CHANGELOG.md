@@ -6,7 +6,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.16] - 2026-07-07
+
+### Chores
+
+- Update step-security/harden-runner action to v2.20.0 by @renovate[bot] in [#117](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/117)
+- Rebuild dist/index.js by @github-actions[bot] in [#116](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/116)
+
+## [1.1.15] - 2026-07-06
 
 ### Chores
 
@@ -299,7 +306,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Compare Releases
 
-- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.14...HEAD)
+- [1.1.16](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.15...v1.1.16)
+- [1.1.15](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.14...v1.1.15)
 - [1.1.14](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.13...v1.1.14)
 - [1.1.13](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.12...v1.1.13)
 - [1.1.12](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.11...v1.1.12)
