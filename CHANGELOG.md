@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chores
 
+- Update dependency @commitlint/cli to v21.2.1 by @renovate[bot] in [#121](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/121)
+
+## [1.1.17] - 2026-07-08
+
+### Chores
+
 - Update github/codeql-action action to v4.37.0 by @renovate[bot] in [#119](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/119)
 
 ## [1.1.16] - 2026-07-07
@@ -312,7 +318,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Compare Releases
 
-- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.16...HEAD)
+- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.17...HEAD)
+- [1.1.17](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.16...v1.1.17)
 - [1.1.16](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.15...v1.1.16)
 - [1.1.15](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.14...v1.1.15)
 - [1.1.14](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.13...v1.1.14)
