@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chores
 
+- Lock file maintenance by @renovate[bot] in [#125](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/125)
+
+## [1.1.19] - 2026-07-11
+
+### Chores
+
 - Update dependency @types/node to v26.1.1 by @renovate[bot] in [#122](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/122)
 
 ## [1.1.18] - 2026-07-11
@@ -324,7 +330,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Compare Releases
 
-- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.18...HEAD)
+- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.19...HEAD)
+- [1.1.19](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.18...v1.1.19)
 - [1.1.18](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.17...v1.1.18)
 - [1.1.17](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.16...v1.1.17)
 - [1.1.16](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.15...v1.1.16)
