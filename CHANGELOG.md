@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chores
 
+- Update github/codeql-action action to v4.37.2 by @renovate[bot] in [#142](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/142)
+
+## [1.1.28] - 2026-07-21
+
+### Chores
+
 - Update dependency semantic-release to v25.0.8 by @renovate[bot] in [#140](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/140)
 - Update actions/checkout action to v7.0.1 by @renovate[bot] in [#139](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/139)
 
@@ -379,7 +385,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Compare Releases
 
-- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.27...HEAD)
+- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.28...HEAD)
+- [1.1.28](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.27...v1.1.28)
 - [1.1.27](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.26...v1.1.27)
 - [1.1.26](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.25...v1.1.26)
 - [1.1.25](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.24...v1.1.25)
