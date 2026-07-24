@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chores
 
+- Update dependency @semantic-release/git to v11 by @renovate[bot] in [#148](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/148)
+
+## [1.1.31] - 2026-07-23
+
+### Chores
+
 - Update ossf/scorecard-action action to v2.4.4 by @renovate[bot] in [#146](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/146)
 
 ## [1.1.30] - 2026-07-22
@@ -397,7 +403,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Compare Releases
 
-- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.30...HEAD)
+- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.31...HEAD)
+- [1.1.31](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.30...v1.1.31)
 - [1.1.30](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.29...v1.1.30)
 - [1.1.29](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.28...v1.1.29)
 - [1.1.28](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.27...v1.1.28)
