@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chores
 
+- Update step-security/harden-runner action to v2.20.1 by @renovate[bot] in [#164](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/164)
+
+## [1.1.38] - 2026-08-04
+
+### Chores
+
 - Update github/codeql-action action to v4.37.6 by @renovate[bot] in [#162](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/162)
 
 ## [1.1.37] - 2026-08-03
@@ -441,7 +447,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Compare Releases
 
-- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.37...HEAD)
+- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.38...HEAD)
+- [1.1.38](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.37...v1.1.38)
 - [1.1.37](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.36...v1.1.37)
 - [1.1.36](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.35...v1.1.36)
 - [1.1.35](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.34...v1.1.35)
