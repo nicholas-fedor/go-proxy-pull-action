@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chores
 
+- Update dependency semantic-release to v25.0.9 by @renovate[bot] in [#166](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/166)
+
+## [1.1.39] - 2026-08-05
+
+### Chores
+
 - Update step-security/harden-runner action to v2.20.1 by @renovate[bot] in [#164](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/164)
 
 ## [1.1.38] - 2026-08-04
@@ -447,7 +453,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Compare Releases
 
-- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.38...HEAD)
+- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.39...HEAD)
+- [1.1.39](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.38...v1.1.39)
 - [1.1.38](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.37...v1.1.38)
 - [1.1.37](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.36...v1.1.37)
 - [1.1.36](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.35...v1.1.36)
