@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chores
 
+- Update commitlint monorepo to v21.2.2 by @renovate[bot] in [#177](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/177)
+
+## [1.1.44] - 2026-08-15
+
+### Chores
+
 - Update step-security/harden-runner action to v2.21.0 by @renovate[bot] in [#175](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/175)
 
 ## [1.1.43] - 2026-08-13
@@ -478,7 +484,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Compare Releases
 
-- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.43...HEAD)
+- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.44...HEAD)
+- [1.1.44](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.43...v1.1.44)
 - [1.1.43](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.42...v1.1.43)
 - [1.1.42](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.41...v1.1.42)
 - [1.1.41](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.40...v1.1.41)
