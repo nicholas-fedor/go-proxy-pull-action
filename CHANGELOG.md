@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chores
 
+- Consolidate renovate config and prevent ci commits from triggering releases by @nicholas-fedor in [#181](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/181)
+
+## [1.1.46] - 2026-08-17
+
+### Chores
+
 - Lock file maintenance by @renovate[bot] in [#179](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/179)
 
 ## [1.1.45] - 2026-08-16
@@ -490,7 +496,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Compare Releases
 
-- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.45...HEAD)
+- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.46...HEAD)
+- [1.1.46](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.45...v1.1.46)
 - [1.1.45](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.44...v1.1.45)
 - [1.1.44](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.43...v1.1.44)
 - [1.1.43](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.42...v1.1.43)
