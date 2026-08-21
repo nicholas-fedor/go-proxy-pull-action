@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chores
 
+- Update github/codeql-action action to v4.37.8 by @renovate[bot] in [#183](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/183)
 - Consolidate renovate config and prevent ci commits from triggering releases by @nicholas-fedor in [#181](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/181)
 
 ## [1.1.46] - 2026-08-17
