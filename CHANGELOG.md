@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chores
 
+- Lock file maintenance by @renovate[bot] in [#188](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/188)
+- Rebuild dist/index.js by @github-actions[bot] in [#186](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/186)
 - Update dependency @types/bun to v1.4.0 by @renovate[bot] in [#185](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/185)
 - Update github/codeql-action action to v4.37.8 by @renovate[bot] in [#183](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/183)
 - Consolidate renovate config and prevent ci commits from triggering releases by @nicholas-fedor in [#181](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/181)
