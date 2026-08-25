@@ -23,6 +23,7 @@ export async function pullToProxy(
         ...process.env,
         GO111MODULE: "on",
         GOPROXY: goproxy,
+        GOTOOLCHAIN: "auto",
     };
 
     try {

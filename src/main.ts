@@ -1,29 +1,33 @@
 import * as core from "@actions/core";
 import { parseInputs } from "./inputs.js";
-import { parseVersion } from "./version.js";
+import { parseExplicitVersion, parseVersion } from "./version.js";
 import { resolvePackage } from "./package.js";
 import { pullToProxy } from "./proxy.js";
+import { parseGoproxy, sanitizeErrorMessage, sanitizeProxy } from "./goproxy.js";
+import { pullViaGoproxyList } from "./http.js";
 
-export function sanitizeProxy(goproxy: string): string {
+export { sanitizeProxy };
+
+async function pingPkgGoDev(importPath: string, version: string): Promise<void> {
+    const url = `https://pkg.go.dev/${importPath}@${version}`;
     try {
-        const proxyUrl = new URL(goproxy);
-        if (proxyUrl.username || proxyUrl.password) {
-            proxyUrl.username = "***";
-            proxyUrl.password = "***";
-            return proxyUrl.toString();
+        core.info(`Pinging ${url}`);
+        const res = await fetch(url, { signal: AbortSignal.timeout(15_000) });
+        if (!res.ok) {
+            core.warning(`pkg.go.dev returned HTTP ${res.status} for ${url}`);
         }
-    } catch {
-        // not a valid URL, return as-is
+    } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        core.warning(`pkg.go.dev ping failed: ${message}`);
     }
-    return goproxy;
 }
 
-async function main(): Promise<void> {
+export async function run(): Promise<void> {
     try {
-        const { goproxy, importPath } = parseInputs();
+        const inputs = parseInputs();
 
         const githubRef = process.env.GITHUB_REF;
-        if (!githubRef) {
+        if (!inputs.version && !githubRef) {
             core.setFailed("GITHUB_REF is not set");
             return;
         }
@@ -34,33 +38,56 @@ async function main(): Promise<void> {
             return;
         }
 
-        const versionInfo = parseVersion(githubRef);
+        const versionInfo = inputs.version
+            ? parseExplicitVersion(inputs.version)
+            : parseVersion(githubRef!);
         core.info(`Tag: ${versionInfo.tag}`);
         core.info(`Version: ${versionInfo.version}`);
         if (versionInfo.isSubmodule) {
             core.info(`Submodule path: ${versionInfo.submodulePath}`);
         }
 
-        const pkg = resolvePackage(versionInfo, importPath, repository);
+        const pkg = resolvePackage(versionInfo, inputs.importPath, repository);
         core.info(`Package: ${pkg.importPath}@${pkg.version}`);
+        core.info(`Proxy: ${sanitizeProxy(inputs.goproxy)}`);
 
-        core.info(`Proxy: ${sanitizeProxy(goproxy)}`);
+        const tokens = parseGoproxy(inputs.goproxy);
+        let infoUrl = "";
 
-        const result = await pullToProxy(pkg.importPath, pkg.version, goproxy);
-
-        if (result.exitCode !== 0) {
-            core.setFailed(`go get failed for ${pkg.importPath}@${pkg.version} (exit code ${result.exitCode})`);
-            return;
+        if (inputs.method === "http") {
+            const result = await pullViaGoproxyList(tokens, {
+                importPath: pkg.importPath,
+                version: pkg.version,
+                retries: inputs.retries,
+            });
+            infoUrl = result.infoUrl;
+        } else {
+            const result = await pullToProxy(pkg.importPath, pkg.version, inputs.goproxy);
+            if (result.exitCode !== 0) {
+                core.setFailed(
+                    `go get failed for ${pkg.importPath}@${pkg.version} (exit code ${result.exitCode})`,
+                );
+                return;
+            }
         }
 
+        if (inputs.pkgGoDev) {
+            await pingPkgGoDev(pkg.importPath, pkg.version);
+        }
+
+        core.setOutput("import-path", pkg.importPath);
+        core.setOutput("version", pkg.version);
+        core.setOutput("info-url", infoUrl);
         core.notice(`Successfully pulled ${pkg.importPath}@${pkg.version} to proxy`);
     } catch (err) {
         if (err instanceof Error) {
-            core.setFailed(err.message);
+            core.setFailed(sanitizeErrorMessage(err.message));
         } else {
-            core.setFailed(String(err));
+            core.setFailed(sanitizeErrorMessage(String(err)));
         }
     }
 }
 
-main();
+if (import.meta.main || process.argv[1]?.endsWith("index.js")) {
+    void run();
+}

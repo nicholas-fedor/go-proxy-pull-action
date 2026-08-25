@@ -1,23 +1,13 @@
 import * as core from "@actions/core";
+import { parseGoproxy } from "./goproxy.js";
 
 export interface ActionInputs {
     goproxy: string;
     importPath: string;
-}
-
-function validateProxyURL(url: string): string {
-    try {
-        const parsed = new URL(url);
-        if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-            throw new Error(`Unsupported protocol: ${parsed.protocol}`);
-        }
-        return parsed.href;
-    } catch (err) {
-        if (err instanceof TypeError) {
-            throw new Error(`Invalid goproxy URL: "${url}" is not a valid URL`);
-        }
-        throw err;
-    }
+    version: string;
+    method: "http" | "go-get";
+    retries: number;
+    pkgGoDev: boolean;
 }
 
 function validateImportPath(path: string): string {
@@ -31,12 +21,40 @@ function validateImportPath(path: string): string {
     return path;
 }
 
+function parseMethod(raw: string): "http" | "go-get" {
+    const method = raw || "http";
+    if (method !== "http" && method !== "go-get") {
+        throw new Error(`Invalid method: "${method}". Use "http" or "go-get".`);
+    }
+    return method;
+}
+
+function parseRetries(raw: string): number {
+    const value = raw || "5";
+    const retries = Number(value);
+    if (!Number.isInteger(retries) || retries < 1) {
+        throw new Error(`Invalid retries: "${value}" must be an integer >= 1`);
+    }
+    return retries;
+}
+
+function parsePkgGoDev(raw: string): boolean {
+    if (raw === "") return false;
+    const lower = raw.toLowerCase();
+    if (lower === "true") return true;
+    if (lower === "false") return false;
+    throw new Error(`Invalid pkg-go-dev: "${raw}" must be true or false`);
+}
+
 export function parseInputs(): ActionInputs {
-    const rawProxy = core.getInput("goproxy", { required: false }) || "https://proxy.golang.org";
-    const goproxy = validateProxyURL(rawProxy);
+    const goproxy = core.getInput("goproxy", { required: false }) || "https://proxy.golang.org";
+    parseGoproxy(goproxy);
 
-    const rawImportPath = core.getInput("import_path", { required: false });
-    const importPath = validateImportPath(rawImportPath);
+    const importPath = validateImportPath(core.getInput("import_path", { required: false }));
+    const version = core.getInput("version", { required: false });
+    const method = parseMethod(core.getInput("method", { required: false }));
+    const retries = parseRetries(core.getInput("retries", { required: false }));
+    const pkgGoDev = parsePkgGoDev(core.getInput("pkg-go-dev", { required: false }));
 
-    return { goproxy, importPath };
+    return { goproxy, importPath, version, method, retries, pkgGoDev };
 }

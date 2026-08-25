@@ -39,4 +39,18 @@ describe("sanitizeProxy", () => {
         const result = sanitizeProxy("https://us%40er:p%40ss@proxy.example.com");
         expect(result).toBe("https://***:***@proxy.example.com/");
     });
+
+    it("redacts credentials in each GOPROXY list entry", () => {
+        const result = sanitizeProxy(
+            "https://user:pass@proxy.example.com,direct,https://token@other.example.com",
+        );
+        expect(result).toBe(
+            "https://***:***@proxy.example.com/,direct,https://***:***@other.example.com/",
+        );
+    });
+
+    it("leaves non-URL GOPROXY tokens unchanged", () => {
+        expect(sanitizeProxy("off")).toBe("off");
+        expect(sanitizeProxy("direct")).toBe("direct");
+    });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { parseVersion } from "./version.js";
+import { parseVersion, parseExplicitVersion } from "./version.js";
 
 describe("parseVersion", () => {
     describe("standard version tags", () => {
@@ -99,21 +99,48 @@ describe("parseVersion", () => {
         });
     });
 
+    describe("non-tag refs", () => {
+        it("throws on a branch ref", () => {
+            expect(() => parseVersion("refs/heads/master")).toThrow(/not a tag/i);
+        });
+
+        it("throws on a pull-request ref", () => {
+            expect(() => parseVersion("refs/pull/12/merge")).toThrow(/not a tag/i);
+        });
+    });
+
+    describe("parseExplicitVersion", () => {
+        it("parses v1.2.3", () => {
+            const result = parseExplicitVersion("v1.2.3");
+            expect(result.version).toBe("v1.2.3");
+            expect(result.isSubmodule).toBe(false);
+            expect(result.majorVersion).toBe(1);
+        });
+
+        it("parses submodule/v2.0.0", () => {
+            const result = parseExplicitVersion("contrib/v2.0.0");
+            expect(result.version).toBe("v2.0.0");
+            expect(result.isSubmodule).toBe(true);
+            expect(result.submodulePath).toBe("contrib");
+            expect(result.majorVersion).toBe(2);
+        });
+
+        it("throws on master", () => {
+            expect(() => parseExplicitVersion("master")).toThrow(/module version/i);
+        });
+    });
+
     describe("edge cases", () => {
-        it("returns null majorVersion for non-numeric version", () => {
-            const result = parseVersion("refs/tags/vabc.0.0");
-            expect(result.majorVersion).toBeNull();
+        it("throws on a non-numeric version", () => {
+            expect(() => parseVersion("refs/tags/vabc.0.0")).toThrow(/module version/i);
         });
 
-        it("returns null majorVersion for empty version string", () => {
-            const result = parseVersion("refs/tags/");
-            expect(result.version).toBe("");
-            expect(result.majorVersion).toBeNull();
+        it("throws on an empty version string", () => {
+            expect(() => parseVersion("refs/tags/")).toThrow(/module version/i);
         });
 
-        it("handles tag with only major version", () => {
-            const result = parseVersion("refs/tags/v3");
-            expect(result.majorVersion).toBe(3);
+        it("throws on a tag with only a major version", () => {
+            expect(() => parseVersion("refs/tags/v3")).toThrow(/module version/i);
         });
 
         it("handles tag with leading zeros in major version", () => {
@@ -121,14 +148,12 @@ describe("parseVersion", () => {
             expect(result.majorVersion).toBe(2);
         });
 
-        it("returns null majorVersion for just 'v' prefix with no number", () => {
-            const result = parseVersion("refs/tags/v");
-            expect(result.majorVersion).toBeNull();
+        it("throws on just a 'v' prefix with no number", () => {
+            expect(() => parseVersion("refs/tags/v")).toThrow(/module version/i);
         });
 
-        it("returns null majorVersion for negative major version", () => {
-            const result = parseVersion("refs/tags/v-1.0.0");
-            expect(result.majorVersion).toBeNull();
+        it("throws on a negative major version", () => {
+            expect(() => parseVersion("refs/tags/v-1.0.0")).toThrow(/module version/i);
         });
     });
 });

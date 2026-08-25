@@ -77,6 +77,18 @@ describe("resolvePackage", () => {
             expect(result.importPath).toBe("example.com/lib/v3");
         });
 
+        it("does not append a major-version suffix for +incompatible versions", () => {
+            const versionInfo: VersionInfo = {
+                tag: "v2.0.0+incompatible",
+                version: "v2.0.0+incompatible",
+                isSubmodule: false,
+                submodulePath: "",
+                majorVersion: 2,
+            };
+            const result = resolvePackage(versionInfo, "", "user/repo");
+            expect(result.importPath).toBe("github.com/user/repo");
+        });
+
         it("does not append suffix for major version 1", () => {
             const versionInfo: VersionInfo = {
                 tag: "v1.2.3",
@@ -163,6 +175,32 @@ describe("resolvePackage", () => {
             };
             const result = resolvePackage(versionInfo, "example.com/myproject", "user/repo");
             expect(result.importPath).toBe("example.com/myproject/contrib/v3");
+        });
+    });
+
+    describe("default github.com import path casing", () => {
+        it("lowercases the default github.com import path", () => {
+            const versionInfo: VersionInfo = {
+                tag: "v1.0.0",
+                version: "v1.0.0",
+                isSubmodule: false,
+                submodulePath: "",
+                majorVersion: 1,
+            };
+            const result = resolvePackage(versionInfo, "", "Example-Org/MyModule");
+            expect(result.importPath).toBe("github.com/example-org/mymodule");
+        });
+
+        it("does not rewrite a custom import path", () => {
+            const versionInfo: VersionInfo = {
+                tag: "v1.0.0",
+                version: "v1.0.0",
+                isSubmodule: false,
+                submodulePath: "",
+                majorVersion: 1,
+            };
+            const result = resolvePackage(versionInfo, "example.com/MyProject", "user/repo");
+            expect(result.importPath).toBe("example.com/MyProject");
         });
     });
 

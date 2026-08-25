@@ -13577,8 +13577,8 @@ var require_snapshot_utils = __commonJS(function(exports, module) {
       match: new Set(matchHeaders.map((header) => caseSensitive ? header : header.toLowerCase()))
     };
   }
-  var crypto = runtimeFeatures.has("crypto") ? __require("node:crypto") : null;
-  var hashId = crypto?.hash ? (value) => crypto.hash("sha256", value, "base64url") : (value) => Buffer.from(value).toString("base64url");
+  var crypto2 = runtimeFeatures.has("crypto") ? __require("node:crypto") : null;
+  var hashId = crypto2?.hash ? (value) => crypto2.hash("sha256", value, "base64url") : (value) => Buffer.from(value).toString("base64url");
   function isUndiciHeaders(headers) {
     return Array.isArray(headers) && (headers.length & 1) === 0;
   }
@@ -19401,10 +19401,10 @@ var require_subresource_integrity = __commonJS(function(exports, module) {
   var assert2 = __require("node:assert");
   var { runtimeFeatures } = require_runtime_features();
   var validSRIHashAlgorithmTokenSet = new Map([["sha256", 0], ["sha384", 1], ["sha512", 2]]);
-  var crypto;
+  var crypto2;
   if (runtimeFeatures.has("crypto")) {
-    crypto = __require("node:crypto");
-    const cryptoHashes = crypto.getHashes();
+    crypto2 = __require("node:crypto");
+    const cryptoHashes = crypto2.getHashes();
     if (cryptoHashes.length === 0) {
       validSRIHashAlgorithmTokenSet.clear();
     }
@@ -19483,7 +19483,7 @@ var require_subresource_integrity = __commonJS(function(exports, module) {
     return result;
   }
   var applyAlgorithmToBytes = (algorithm, bytes) => {
-    return crypto.hash(algorithm, bytes, "base64");
+    return crypto2.hash(algorithm, bytes, "base64");
   };
   function caseSensitiveMatch(actualValue, expectedValue) {
     let actualValueLength = actualValue.length;
@@ -19647,7 +19647,7 @@ var require_fetch = __commonJS(function(exports, module) {
   function handleFetchDone(response) {
     finalizeAndReportTiming(response, "fetch");
   }
-  function fetch(input, init = undefined) {
+  function fetch2(input, init = undefined) {
     webidl.argumentLengthCheck(arguments, 1, "globalThis.fetch");
     let p = Promise.withResolvers();
     let requestObject;
@@ -20584,7 +20584,7 @@ var require_fetch = __commonJS(function(exports, module) {
     }
   }
   module.exports = {
-    fetch,
+    fetch: fetch2,
     Fetch,
     fetching,
     finalizeAndReportTiming
@@ -22217,7 +22217,7 @@ var require_connection = __commonJS(function(exports, module) {
   var { WebsocketFrameSend } = require_frame();
   var assert2 = __require("node:assert");
   var { runtimeFeatures } = require_runtime_features();
-  var crypto = runtimeFeatures.has("crypto") ? __require("node:crypto") : null;
+  var crypto2 = runtimeFeatures.has("crypto") ? __require("node:crypto") : null;
   var warningEmitted = false;
   function establishWebSocketConnection(url, protocols, client, handler, options) {
     const requestURL = url;
@@ -22237,7 +22237,7 @@ var require_connection = __commonJS(function(exports, module) {
       const headersList = getHeadersList(new Headers(options.headers));
       request.headersList = headersList;
     }
-    const keyValue = crypto.randomBytes(16).toString("base64");
+    const keyValue = crypto2.randomBytes(16).toString("base64");
     request.headersList.append("sec-websocket-key", keyValue, true);
     request.headersList.append("sec-websocket-version", "13", true);
     for (const protocol of protocols) {
@@ -22277,7 +22277,7 @@ var require_connection = __commonJS(function(exports, module) {
           return;
         }
         const secWSAccept = response.headersList.get("Sec-WebSocket-Accept");
-        const digest = crypto.hash("sha1", keyValue + uid, "base64");
+        const digest = crypto2.hash("sha1", keyValue + uid, "base64");
         if (secWSAccept !== digest) {
           failWebsocketConnection(handler, 1002, "Incorrect hash received in Sec-WebSocket-Accept header.");
           return;
@@ -24333,8 +24333,36 @@ function escapeProperty(s) {
   return toCommandValue(s).replace(/%/g, "%25").replace(/\r/g, "%0D").replace(/\n/g, "%0A").replace(/:/g, "%3A").replace(/,/g, "%2C");
 }
 
+// node_modules/@actions/core/lib/file-command.js
+import * as crypto from "crypto";
+import * as fs from "fs";
+import * as os2 from "os";
+function issueFileCommand(command, message) {
+  const filePath = process.env[`GITHUB_${command}`];
+  if (!filePath) {
+    throw new Error(`Unable to find environment variable for file command ${command}`);
+  }
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Missing file at path: ${filePath}`);
+  }
+  fs.appendFileSync(filePath, `${toCommandValue(message)}${os2.EOL}`, {
+    encoding: "utf8"
+  });
+}
+function prepareKeyValueMessage(key, value) {
+  const delimiter = `ghadelimiter_${crypto.randomUUID()}`;
+  const convertedValue = toCommandValue(value);
+  if (key.includes(delimiter)) {
+    throw new Error(`Unexpected input: name should not contain the delimiter "${delimiter}"`);
+  }
+  if (convertedValue.includes(delimiter)) {
+    throw new Error(`Unexpected input: value should not contain the delimiter "${delimiter}"`);
+  }
+  return `${key}<<${delimiter}${os2.EOL}${convertedValue}${os2.EOL}${delimiter}`;
+}
+
 // node_modules/@actions/core/lib/core.js
-import * as os4 from "os";
+import * as os5 from "os";
 
 // node_modules/tunnel/lib/tunnel.js
 var net = __require("net");
@@ -24513,7 +24541,7 @@ if (process.env.NODE_DEBUG && /\btunnel\b/.test(process.env.NODE_DEBUG)) {
 }
 
 // node_modules/undici/index.js
-var __filename = "/home/runner/work/go-proxy-pull-action/go-proxy-pull-action/node_modules/undici/index.js";
+var __filename = "/home/nick/Projects/Forks/go-proxy-pull-action/node_modules/undici/index.js";
 var Client = require_client();
 var Dispatcher = require_dispatcher();
 var Pool = require_pool();
@@ -24676,7 +24704,7 @@ var HttpResponseRetryCodes = [
 ];
 
 // node_modules/@actions/core/lib/summary.js
-import { EOL as EOL2 } from "os";
+import { EOL as EOL3 } from "os";
 import { constants, promises } from "fs";
 var __awaiter = function(thisArg, _arguments, P, generator) {
   function adopt(value) {
@@ -24765,7 +24793,7 @@ class Summary {
     return addEOL ? this.addEOL() : this;
   }
   addEOL() {
-    return this.addRaw(EOL2);
+    return this.addRaw(EOL3);
   }
   addCodeBlock(code, lang) {
     const attrs = Object.assign({}, lang && { lang });
@@ -24830,10 +24858,10 @@ class Summary {
 }
 var _summary = new Summary;
 // node_modules/@actions/core/lib/platform.js
-import os3 from "os";
+import os4 from "os";
 
 // node_modules/@actions/exec/lib/toolrunner.js
-import * as os2 from "os";
+import * as os3 from "os";
 import * as events2 from "events";
 import * as child from "child_process";
 import * as path3 from "path";
@@ -24842,7 +24870,7 @@ import * as path3 from "path";
 import * as path2 from "path";
 
 // node_modules/@actions/io/lib/io-util.js
-import * as fs from "fs";
+import * as fs2 from "fs";
 import * as path from "path";
 var __awaiter2 = function(thisArg, _arguments, P, generator) {
   function adopt(value) {
@@ -24871,9 +24899,9 @@ var __awaiter2 = function(thisArg, _arguments, P, generator) {
     step((generator = generator.apply(thisArg, _arguments || [])).next());
   });
 };
-var { chmod, copyFile, lstat, mkdir, open, readdir, rename, rm, rmdir, stat, symlink, unlink } = fs.promises;
+var { chmod, copyFile, lstat, mkdir, open, readdir, rename, rm, rmdir, stat, symlink, unlink } = fs2.promises;
 var IS_WINDOWS = process.platform === "win32";
-var READONLY = fs.constants.O_RDONLY;
+var READONLY = fs2.constants.O_RDONLY;
 function exists(fsPath) {
   return __awaiter2(this, undefined, undefined, function* () {
     try {
@@ -25157,12 +25185,12 @@ class ToolRunner extends events2.EventEmitter {
   _processLineBuffer(data, strBuffer, onLine) {
     try {
       let s = strBuffer + data.toString();
-      let n = s.indexOf(os2.EOL);
+      let n = s.indexOf(os3.EOL);
       while (n > -1) {
         const line = s.substring(0, n);
         onLine(line);
-        s = s.substring(n + os2.EOL.length);
-        n = s.indexOf(os2.EOL);
+        s = s.substring(n + os3.EOL.length);
+        n = s.indexOf(os3.EOL);
       }
       return s;
     } catch (err) {
@@ -25322,7 +25350,7 @@ class ToolRunner extends events2.EventEmitter {
         }
         const optionsNonNull = this._cloneExecOptions(this.options);
         if (!optionsNonNull.silent && optionsNonNull.outStream) {
-          optionsNonNull.outStream.write(this._getCommandString(optionsNonNull) + os2.EOL);
+          optionsNonNull.outStream.write(this._getCommandString(optionsNonNull) + os3.EOL);
         }
         const state = new ExecState(optionsNonNull, this.toolPath);
         state.on("debug", (message) => {
@@ -25560,8 +25588,8 @@ function exec(commandLine, args, options) {
 }
 
 // node_modules/@actions/core/lib/platform.js
-var platform = os3.platform();
-var arch = os3.arch();
+var platform = os4.platform();
+var arch = os4.arch();
 // node_modules/@actions/core/lib/core.js
 var ExitCode;
 (function(ExitCode2) {
@@ -25578,6 +25606,14 @@ function getInput(name, options) {
   }
   return val.trim();
 }
+function setOutput(name, value) {
+  const filePath = process.env["GITHUB_OUTPUT"] || "";
+  if (filePath) {
+    return issueFileCommand("OUTPUT", prepareKeyValueMessage(name, value));
+  }
+  process.stdout.write(os5.EOL);
+  issueCommand("set-output", { name }, toCommandValue(value));
+}
 function setFailed(message) {
   process.exitCode = ExitCode.Failure;
   error(message);
@@ -25585,28 +25621,93 @@ function setFailed(message) {
 function error(message, properties = {}) {
   issueCommand("error", toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
+function warning(message, properties = {}) {
+  issueCommand("warning", toCommandProperties(properties), message instanceof Error ? message.toString() : message);
+}
 function notice(message, properties = {}) {
   issueCommand("notice", toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 function info(message) {
-  process.stdout.write(message + os4.EOL);
+  process.stdout.write(message + os5.EOL);
+}
+
+// src/goproxy.ts
+function redactUrl(value) {
+  try {
+    const parsed = new URL(value);
+    if (parsed.username || parsed.password) {
+      parsed.username = "***";
+      parsed.password = "***";
+      return parsed.toString();
+    }
+    return value;
+  } catch {
+    return value.replace(/^(https?:\/\/)[^@/?#]+@/i, "$1***:***@");
+  }
+}
+function sanitizeProxy(goproxy) {
+  return goproxy.split(",").map((part) => {
+    const trimmed = part.trim();
+    if (trimmed === "")
+      return trimmed;
+    return redactUrl(trimmed);
+  }).join(",");
+}
+function sanitizeErrorMessage(message) {
+  return message.replace(/https?:\/\/[^/@\s]+@/gi, (match) => {
+    const scheme = match.slice(0, match.indexOf("://"));
+    return `${scheme}://***:***@`;
+  });
+}
+function parseGoproxy(value) {
+  const parts = value.split(",").map((p) => p.trim()).filter((p) => p.length > 0);
+  if (parts.length === 0) {
+    throw new Error(`Invalid goproxy: value is empty`);
+  }
+  return parts.map(parseToken);
+}
+function parseToken(token) {
+  const lower = token.toLowerCase();
+  if (lower === "direct")
+    return { kind: "direct" };
+  if (lower === "off")
+    return { kind: "off" };
+  let parsed;
+  try {
+    parsed = new URL(token);
+  } catch {
+    throw new Error(`Invalid goproxy URL: "${redactUrl(token)}" is not a valid URL`);
+  }
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new Error(`Unsupported protocol: ${parsed.protocol}`);
+  }
+  const href = parsed.href.replace(/\/+$/, "");
+  return { kind: "url", href };
+}
+function httpProxyUrls(tokens) {
+  const urls = [];
+  for (const token of tokens) {
+    if (token.kind !== "url") {
+      break;
+    }
+    urls.push(token.href);
+  }
+  return urls;
+}
+function encodeModulePath(importPath) {
+  return importPath.replace(/[A-Z]/g, (ch) => `!${ch.toLowerCase()}`);
+}
+function canonicalProxyVersion(version) {
+  return /^v/i.test(version) ? version : `v${version}`;
+}
+function moduleVersionUrl(goproxy, importPath, version, file) {
+  const base = goproxy.replace(/\/+$/, "");
+  const encoded = encodeModulePath(importPath);
+  const proxyVersion = canonicalProxyVersion(version);
+  return `${base}/${encoded}/@v/${proxyVersion}.${file}`;
 }
 
 // src/inputs.ts
-function validateProxyURL(url) {
-  try {
-    const parsed = new URL(url);
-    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-      throw new Error(`Unsupported protocol: ${parsed.protocol}`);
-    }
-    return parsed.href;
-  } catch (err) {
-    if (err instanceof TypeError) {
-      throw new Error(`Invalid goproxy URL: "${url}" is not a valid URL`);
-    }
-    throw err;
-  }
-}
 function validateImportPath(path4) {
   if (path4 === "")
     return "";
@@ -25618,18 +25719,61 @@ function validateImportPath(path4) {
   }
   return path4;
 }
+function parseMethod(raw) {
+  const method = raw || "http";
+  if (method !== "http" && method !== "go-get") {
+    throw new Error(`Invalid method: "${method}". Use "http" or "go-get".`);
+  }
+  return method;
+}
+function parseRetries(raw) {
+  const value = raw || "5";
+  const retries = Number(value);
+  if (!Number.isInteger(retries) || retries < 1) {
+    throw new Error(`Invalid retries: "${value}" must be an integer >= 1`);
+  }
+  return retries;
+}
+function parsePkgGoDev(raw) {
+  if (raw === "")
+    return false;
+  const lower = raw.toLowerCase();
+  if (lower === "true")
+    return true;
+  if (lower === "false")
+    return false;
+  throw new Error(`Invalid pkg-go-dev: "${raw}" must be true or false`);
+}
 function parseInputs() {
-  const rawProxy = getInput("goproxy", { required: false }) || "https://proxy.golang.org";
-  const goproxy = validateProxyURL(rawProxy);
-  const rawImportPath = getInput("import_path", { required: false });
-  const importPath = validateImportPath(rawImportPath);
-  return { goproxy, importPath };
+  const goproxy = getInput("goproxy", { required: false }) || "https://proxy.golang.org";
+  parseGoproxy(goproxy);
+  const importPath = validateImportPath(getInput("import_path", { required: false }));
+  const version = getInput("version", { required: false });
+  const method = parseMethod(getInput("method", { required: false }));
+  const retries = parseRetries(getInput("retries", { required: false }));
+  const pkgGoDev = parsePkgGoDev(getInput("pkg-go-dev", { required: false }));
+  return { goproxy, importPath, version, method, retries, pkgGoDev };
 }
 
 // src/version.ts
+var MODULE_VERSION = /^v?\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+incompatible)?$/;
+function isGoModuleVersion(version) {
+  return MODULE_VERSION.test(version);
+}
 function parseVersion(githubRef) {
-  const tag = githubRef.replace(/^refs\/tags\//, "");
+  if (!githubRef.startsWith("refs/tags/")) {
+    throw new Error(`GITHUB_REF is not a tag (${githubRef}). Pass inputs.version or run this action on a tag.`);
+  }
+  return parseTagBody(githubRef.slice("refs/tags/".length));
+}
+function parseExplicitVersion(version) {
+  return parseTagBody(version);
+}
+function parseTagBody(tag) {
   const version = tag.split("/").pop() ?? "";
+  if (!isGoModuleVersion(version)) {
+    throw new Error(`Invalid Go module version: "${version}"`);
+  }
   const isSubmodule = version !== tag;
   const submodulePath = isSubmodule ? tag.slice(0, tag.lastIndexOf("/")) : "";
   const majorVersion = extractMajorVersion(version);
@@ -25648,12 +25792,13 @@ function extractMajorVersion(version) {
 
 // src/package.ts
 function resolvePackage(versionInfo, importPath, repository) {
-  const base = importPath || `github.com/${repository}`;
+  const base = importPath || `github.com/${repository.toLowerCase()}`;
   let pkg = base;
   if (versionInfo.isSubmodule && versionInfo.submodulePath) {
     pkg = `${pkg}/${versionInfo.submodulePath}`;
   }
-  if (versionInfo.majorVersion !== null && versionInfo.majorVersion > 1) {
+  const incompatible = versionInfo.version.endsWith("+incompatible");
+  if (!incompatible && versionInfo.majorVersion !== null && versionInfo.majorVersion > 1) {
     const suffix = `/v${versionInfo.majorVersion}`;
     if (!pkg.endsWith(suffix)) {
       pkg = `${pkg}${suffix}`;
@@ -25666,16 +25811,17 @@ function resolvePackage(versionInfo, importPath, repository) {
 }
 
 // src/proxy.ts
-import * as os5 from "node:os";
+import * as os6 from "node:os";
 import * as path4 from "node:path";
-import * as fs2 from "node:fs";
+import * as fs3 from "node:fs";
 async function pullToProxy(importPath, version, goproxy) {
-  const workDir = fs2.mkdtempSync(path4.join(os5.tmpdir(), "go-proxy-pull-"));
+  const workDir = fs3.mkdtempSync(path4.join(os6.tmpdir(), "go-proxy-pull-"));
   info(`Working directory: ${workDir}`);
   const env = {
     ...process.env,
     GO111MODULE: "on",
-    GOPROXY: goproxy
+    GOPROXY: goproxy,
+    GOTOOLCHAIN: "auto"
   };
   try {
     info("Initializing dummy module...");
@@ -25693,23 +25839,114 @@ async function pullToProxy(importPath, version, goproxy) {
   }
 }
 
-// src/main.ts
-function sanitizeProxy(goproxy) {
-  try {
-    const proxyUrl = new URL(goproxy);
-    if (proxyUrl.username || proxyUrl.password) {
-      proxyUrl.username = "***";
-      proxyUrl.password = "***";
-      return proxyUrl.toString();
-    }
-  } catch {}
-  return goproxy;
+// src/http.ts
+class HttpStatusError extends Error {
+  status;
+  constructor(message, status) {
+    super(message);
+    this.name = "HttpStatusError";
+    this.status = status;
+  }
 }
-async function main() {
+var RETRYABLE = new Set([404, 410, 429, 500, 502, 503, 504]);
+var DEFAULT_DELAYS = [2000, 5000, 1e4, 20000, 20000];
+function requestUrlAndHeaders(url) {
+  const parsed = new URL(url);
+  const headers = {};
+  if (parsed.username || parsed.password) {
+    const credentials = `${decodeURIComponent(parsed.username)}:${decodeURIComponent(parsed.password)}`;
+    headers.Authorization = `Basic ${Buffer.from(credentials).toString("base64")}`;
+    parsed.username = "";
+    parsed.password = "";
+  }
+  return { url: parsed.toString(), headers };
+}
+async function fetchWithRetry(url, opts) {
+  const fetchImpl2 = opts.fetchImpl ?? fetch;
+  const sleep = opts.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms)));
+  const retries = opts.retries ?? 5;
+  const { url: requestUrl, headers } = requestUrlAndHeaders(url);
+  let lastError;
+  for (let attempt = 0;attempt < retries; attempt++) {
+    try {
+      info(`GET ${sanitizeProxy(url)} (attempt ${attempt + 1}/${retries})`);
+      const res = await fetchImpl2(requestUrl, {
+        signal: AbortSignal.timeout(opts.timeoutMs ?? 30000),
+        headers
+      });
+      if (res.status === 200) {
+        return res;
+      }
+      lastError = new HttpStatusError(`GET ${sanitizeProxy(url)} failed with HTTP ${res.status}`, res.status);
+      if (!RETRYABLE.has(res.status) || attempt === retries - 1) {
+        throw lastError;
+      }
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      if (attempt === retries - 1) {
+        throw lastError;
+      }
+      const status = lastError instanceof HttpStatusError ? lastError.status : Number(/HTTP (\d+)/.exec(lastError.message)?.[1]);
+      if (Number.isInteger(status) && !RETRYABLE.has(status)) {
+        throw lastError;
+      }
+    }
+    await sleep(DEFAULT_DELAYS[Math.min(attempt, DEFAULT_DELAYS.length - 1)]);
+  }
+  throw lastError ?? new Error("unreachable");
+}
+async function pullViaHttp(opts) {
+  const infoUrl = moduleVersionUrl(opts.goproxy, opts.importPath, opts.version, "info");
+  const modUrl = moduleVersionUrl(opts.goproxy, opts.importPath, opts.version, "mod");
+  const infoRes = await fetchWithRetry(infoUrl, opts);
+  const body = await infoRes.text();
   try {
-    const { goproxy, importPath } = parseInputs();
+    await fetchWithRetry(modUrl, opts);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    warning(`Module .mod warm failed after successful .info: ${message}`);
+  }
+  return { infoUrl, status: infoRes.status, body };
+}
+async function pullViaGoproxyList(tokens, opts) {
+  const urls = httpProxyUrls(tokens);
+  if (urls.length === 0) {
+    throw new Error("method=http requires an HTTP(S) GOPROXY entry; got only direct/off. Use method: go-get.");
+  }
+  let lastError;
+  for (const goproxy of urls) {
+    try {
+      return await pullViaHttp({ ...opts, goproxy });
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      if (lastError instanceof HttpStatusError && (lastError.status === 404 || lastError.status === 410)) {
+        continue;
+      }
+      throw lastError;
+    }
+  }
+  throw lastError ?? new Error("All GOPROXY URLs failed");
+}
+
+// src/main.ts
+async function pingPkgGoDev(importPath, version) {
+  const url = `https://pkg.go.dev/${importPath}@${version}`;
+  try {
+    info(`Pinging ${url}`);
+    const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
+    if (!res.ok) {
+      warning(`pkg.go.dev returned HTTP ${res.status} for ${url}`);
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    warning(`pkg.go.dev ping failed: ${message}`);
+  }
+}
+async function run() {
+  try {
+    const inputs = parseInputs();
     const githubRef = process.env.GITHUB_REF;
-    if (!githubRef) {
+    if (!inputs.version && !githubRef) {
       setFailed("GITHUB_REF is not set");
       return;
     }
@@ -25718,30 +25955,50 @@ async function main() {
       setFailed("GITHUB_REPOSITORY is not set");
       return;
     }
-    const versionInfo = parseVersion(githubRef);
+    const versionInfo = inputs.version ? parseExplicitVersion(inputs.version) : parseVersion(githubRef);
     info(`Tag: ${versionInfo.tag}`);
     info(`Version: ${versionInfo.version}`);
     if (versionInfo.isSubmodule) {
       info(`Submodule path: ${versionInfo.submodulePath}`);
     }
-    const pkg = resolvePackage(versionInfo, importPath, repository);
+    const pkg = resolvePackage(versionInfo, inputs.importPath, repository);
     info(`Package: ${pkg.importPath}@${pkg.version}`);
-    info(`Proxy: ${sanitizeProxy(goproxy)}`);
-    const result = await pullToProxy(pkg.importPath, pkg.version, goproxy);
-    if (result.exitCode !== 0) {
-      setFailed(`go get failed for ${pkg.importPath}@${pkg.version} (exit code ${result.exitCode})`);
-      return;
+    info(`Proxy: ${sanitizeProxy(inputs.goproxy)}`);
+    const tokens = parseGoproxy(inputs.goproxy);
+    let infoUrl = "";
+    if (inputs.method === "http") {
+      const result = await pullViaGoproxyList(tokens, {
+        importPath: pkg.importPath,
+        version: pkg.version,
+        retries: inputs.retries
+      });
+      infoUrl = result.infoUrl;
+    } else {
+      const result = await pullToProxy(pkg.importPath, pkg.version, inputs.goproxy);
+      if (result.exitCode !== 0) {
+        setFailed(`go get failed for ${pkg.importPath}@${pkg.version} (exit code ${result.exitCode})`);
+        return;
+      }
     }
+    if (inputs.pkgGoDev) {
+      await pingPkgGoDev(pkg.importPath, pkg.version);
+    }
+    setOutput("import-path", pkg.importPath);
+    setOutput("version", pkg.version);
+    setOutput("info-url", infoUrl);
     notice(`Successfully pulled ${pkg.importPath}@${pkg.version} to proxy`);
   } catch (err) {
     if (err instanceof Error) {
-      setFailed(err.message);
+      setFailed(sanitizeErrorMessage(err.message));
     } else {
-      setFailed(String(err));
+      setFailed(sanitizeErrorMessage(String(err)));
     }
   }
 }
-main();
+if (__require.main == __require.module || process.argv[1]?.endsWith("index.js")) {
+  run();
+}
 export {
+  run,
   sanitizeProxy
 };
