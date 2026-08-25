@@ -18,7 +18,8 @@ export function resolvePackage(
         pkg = `${pkg}/${versionInfo.submodulePath}`;
     }
 
-    if (versionInfo.majorVersion !== null && versionInfo.majorVersion > 1) {
+    const incompatible = versionInfo.version.endsWith("+incompatible");
+    if (!incompatible && versionInfo.majorVersion !== null && versionInfo.majorVersion > 1) {
         const suffix = `/v${versionInfo.majorVersion}`;
         if (!pkg.endsWith(suffix)) {
             pkg = `${pkg}${suffix}`;

@@ -39,7 +39,7 @@ function parseRetries(raw: string): number {
 }
 
 function parsePkgGoDev(raw: string): boolean {
-    if (raw === "") return true;
+    if (raw === "") return false;
     const lower = raw.toLowerCase();
     if (lower === "true") return true;
     if (lower === "false") return false;

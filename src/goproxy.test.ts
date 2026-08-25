@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { parseGoproxy, firstHttpProxy, encodeModulePath, moduleVersionUrl } from "./goproxy.js";
+import { parseGoproxy, httpProxyUrls, encodeModulePath, moduleVersionUrl } from "./goproxy.js";
 
 describe("parseGoproxy", () => {
     it("parses a single https URL and normalizes trailing slash away for joining", () => {
@@ -38,22 +38,39 @@ describe("parseGoproxy", () => {
         expect(() => parseGoproxy("not-a-url")).toThrow(/goproxy/i);
     });
 
+    it("redacts credentials in invalid GOPROXY URL errors", () => {
+        expect(() => parseGoproxy("https://user:secret@")).toThrow(/https:\/\/\*\*\*:\*\*\*@/);
+        expect(() => parseGoproxy("https://user:secret@")).not.toThrow(/secret/);
+    });
+
     it("keeps userinfo in the href (needed for authenticated private proxies)", () => {
         const tokens = parseGoproxy("https://user:token@proxy.example.com");
         expect(tokens[0]).toEqual({ kind: "url", href: "https://user:token@proxy.example.com" });
     });
 });
 
-describe("firstHttpProxy", () => {
-    it("returns the first url token", () => {
-        expect(firstHttpProxy(parseGoproxy("https://proxy.golang.org,direct"))).toBe(
+describe("httpProxyUrls", () => {
+    it("returns URL tokens until direct or off", () => {
+        expect(httpProxyUrls(parseGoproxy("https://proxy.golang.org,direct"))).toEqual([
             "https://proxy.golang.org",
-        );
+        ]);
+        expect(
+            httpProxyUrls(parseGoproxy("https://a.example.com,https://b.example.com,direct")),
+        ).toEqual(["https://a.example.com", "https://b.example.com"]);
     });
 
-    it("returns null when only direct/off", () => {
-        expect(firstHttpProxy(parseGoproxy("direct"))).toBeNull();
-        expect(firstHttpProxy(parseGoproxy("off"))).toBeNull();
+    it("stops before later URLs when direct or off appears", () => {
+        expect(
+            httpProxyUrls(parseGoproxy("https://a.example.com,direct,https://b.example.com")),
+        ).toEqual(["https://a.example.com"]);
+        expect(
+            httpProxyUrls(parseGoproxy("https://a.example.com,off,https://b.example.com")),
+        ).toEqual(["https://a.example.com"]);
+    });
+
+    it("returns an empty list when only direct/off", () => {
+        expect(httpProxyUrls(parseGoproxy("direct"))).toEqual([]);
+        expect(httpProxyUrls(parseGoproxy("off"))).toEqual([]);
     });
 });
 
@@ -89,5 +106,11 @@ describe("moduleVersionUrl", () => {
         expect(
             moduleVersionUrl("https://proxy.golang.org/", "github.com/foo/bar", "v1.0.0", "mod"),
         ).toBe("https://proxy.golang.org/github.com/foo/bar/@v/v1.0.0.mod");
+    });
+
+    it("prefixes an unprefixed semver in the @v path", () => {
+        expect(
+            moduleVersionUrl("https://proxy.golang.org", "github.com/foo/bar", "1.2.3", "info"),
+        ).toBe("https://proxy.golang.org/github.com/foo/bar/@v/v1.2.3.info");
     });
 });

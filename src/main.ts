@@ -3,8 +3,8 @@ import { parseInputs } from "./inputs.js";
 import { parseExplicitVersion, parseVersion } from "./version.js";
 import { resolvePackage } from "./package.js";
 import { pullToProxy } from "./proxy.js";
-import { firstHttpProxy, parseGoproxy, sanitizeProxy } from "./goproxy.js";
-import { pullViaHttp } from "./http.js";
+import { parseGoproxy, sanitizeErrorMessage, sanitizeProxy } from "./goproxy.js";
+import { pullViaGoproxyList } from "./http.js";
 
 export { sanitizeProxy };
 
@@ -55,15 +55,7 @@ export async function run(): Promise<void> {
         let infoUrl = "";
 
         if (inputs.method === "http") {
-            const base = firstHttpProxy(tokens);
-            if (base === null) {
-                core.setFailed(
-                    "method=http requires an HTTP(S) GOPROXY entry; got only direct/off. Use method: go-get.",
-                );
-                return;
-            }
-            const result = await pullViaHttp({
-                goproxy: base,
+            const result = await pullViaGoproxyList(tokens, {
                 importPath: pkg.importPath,
                 version: pkg.version,
                 retries: inputs.retries,
@@ -89,9 +81,9 @@ export async function run(): Promise<void> {
         core.notice(`Successfully pulled ${pkg.importPath}@${pkg.version} to proxy`);
     } catch (err) {
         if (err instanceof Error) {
-            core.setFailed(err.message);
+            core.setFailed(sanitizeErrorMessage(err.message));
         } else {
-            core.setFailed(String(err));
+            core.setFailed(sanitizeErrorMessage(String(err)));
         }
     }
 }

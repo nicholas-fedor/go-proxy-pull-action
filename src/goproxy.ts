@@ -1,15 +1,33 @@
-export function sanitizeProxy(goproxy: string): string {
+function redactUrl(value: string): string {
     try {
-        const proxyUrl = new URL(goproxy);
-        if (proxyUrl.username || proxyUrl.password) {
-            proxyUrl.username = "***";
-            proxyUrl.password = "***";
-            return proxyUrl.toString();
+        const parsed = new URL(value);
+        if (parsed.username || parsed.password) {
+            parsed.username = "***";
+            parsed.password = "***";
+            return parsed.toString();
         }
+        return value;
     } catch {
-        // not a valid URL, return as-is
+        return value.replace(/^(https?:\/\/)[^@/?#]+@/i, "$1***:***@");
     }
-    return goproxy;
+}
+
+export function sanitizeProxy(goproxy: string): string {
+    return goproxy
+        .split(",")
+        .map((part) => {
+            const trimmed = part.trim();
+            if (trimmed === "") return trimmed;
+            return redactUrl(trimmed);
+        })
+        .join(",");
+}
+
+export function sanitizeErrorMessage(message: string): string {
+    return message.replace(/https?:\/\/[^/@\s]+@/gi, (match) => {
+        const scheme = match.slice(0, match.indexOf("://"));
+        return `${scheme}://***:***@`;
+    });
 }
 
 export type ProxyToken =
@@ -33,7 +51,7 @@ function parseToken(token: string): ProxyToken {
     try {
         parsed = new URL(token);
     } catch {
-        throw new Error(`Invalid goproxy URL: "${token}" is not a valid URL`);
+        throw new Error(`Invalid goproxy URL: "${redactUrl(token)}" is not a valid URL`);
     }
     if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
         throw new Error(`Unsupported protocol: ${parsed.protocol}`);
@@ -42,13 +60,23 @@ function parseToken(token: string): ProxyToken {
     return { kind: "url", href };
 }
 
-export function firstHttpProxy(tokens: ProxyToken[]): string | null {
-    const found = tokens.find((t) => t.kind === "url");
-    return found && found.kind === "url" ? found.href : null;
+export function httpProxyUrls(tokens: ProxyToken[]): string[] {
+    const urls: string[] = [];
+    for (const token of tokens) {
+        if (token.kind !== "url") {
+            break;
+        }
+        urls.push(token.href);
+    }
+    return urls;
 }
 
 export function encodeModulePath(importPath: string): string {
     return importPath.replace(/[A-Z]/g, (ch) => `!${ch.toLowerCase()}`);
+}
+
+export function canonicalProxyVersion(version: string): string {
+    return /^v/i.test(version) ? version : `v${version}`;
 }
 
 export function moduleVersionUrl(
@@ -59,5 +87,6 @@ export function moduleVersionUrl(
 ): string {
     const base = goproxy.replace(/\/+$/, "");
     const encoded = encodeModulePath(importPath);
-    return `${base}/${encoded}/@v/${version}.${file}`;
+    const proxyVersion = canonicalProxyVersion(version);
+    return `${base}/${encoded}/@v/${proxyVersion}.${file}`;
 }

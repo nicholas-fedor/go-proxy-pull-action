@@ -25,7 +25,7 @@ inputs:
   pkg-go-dev:
     description: "If true, ping pkg.go.dev after a successful proxy warm. Failures are warnings."
     required: false
-    default: "true"
+    default: "false"
   go-version:
     description: "The Go version to use for method=go-get (e.g. '1.26', 'stable'). Semver ranges, stable, oldstable, and wildcards are supported. Takes precedence over go-version-file. Aliases are not supported when go-download-base-url is set."
     required: false

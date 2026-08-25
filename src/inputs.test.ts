@@ -152,14 +152,14 @@ describe("parseInputs", () => {
     });
 
     describe("pkg-go-dev", () => {
-        it("defaults to true", async () => {
+        it("defaults to false", async () => {
             await mockGetInput({});
-            expect(parseInputs().pkgGoDev).toBe(true);
+            expect(parseInputs().pkgGoDev).toBe(false);
         });
 
-        it("accepts false", async () => {
-            await mockGetInput({ "pkg-go-dev": "false" });
-            expect(parseInputs().pkgGoDev).toBe(false);
+        it("accepts true", async () => {
+            await mockGetInput({ "pkg-go-dev": "true" });
+            expect(parseInputs().pkgGoDev).toBe(true);
         });
     });
 });

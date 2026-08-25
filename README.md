@@ -109,7 +109,7 @@ If `true`, GET `https://pkg.go.dev/{import}@{version}` after a successful proxy 
 
 - **Type**: boolean
 - **Required**: false
-- **Default**: `true`
+- **Default**: `false`
 
 ### `go-version`
 

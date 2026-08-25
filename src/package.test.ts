@@ -77,6 +77,18 @@ describe("resolvePackage", () => {
             expect(result.importPath).toBe("example.com/lib/v3");
         });
 
+        it("does not append a major-version suffix for +incompatible versions", () => {
+            const versionInfo: VersionInfo = {
+                tag: "v2.0.0+incompatible",
+                version: "v2.0.0+incompatible",
+                isSubmodule: false,
+                submodulePath: "",
+                majorVersion: 2,
+            };
+            const result = resolvePackage(versionInfo, "", "user/repo");
+            expect(result.importPath).toBe("github.com/user/repo");
+        });
+
         it("does not append suffix for major version 1", () => {
             const versionInfo: VersionInfo = {
                 tag: "v1.2.3",

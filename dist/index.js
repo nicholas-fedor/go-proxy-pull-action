@@ -25632,16 +25632,32 @@ function info(message) {
 }
 
 // src/goproxy.ts
-function sanitizeProxy(goproxy) {
+function redactUrl(value) {
   try {
-    const proxyUrl = new URL(goproxy);
-    if (proxyUrl.username || proxyUrl.password) {
-      proxyUrl.username = "***";
-      proxyUrl.password = "***";
-      return proxyUrl.toString();
+    const parsed = new URL(value);
+    if (parsed.username || parsed.password) {
+      parsed.username = "***";
+      parsed.password = "***";
+      return parsed.toString();
     }
-  } catch {}
-  return goproxy;
+    return value;
+  } catch {
+    return value.replace(/^(https?:\/\/)[^@/?#]+@/i, "$1***:***@");
+  }
+}
+function sanitizeProxy(goproxy) {
+  return goproxy.split(",").map((part) => {
+    const trimmed = part.trim();
+    if (trimmed === "")
+      return trimmed;
+    return redactUrl(trimmed);
+  }).join(",");
+}
+function sanitizeErrorMessage(message) {
+  return message.replace(/https?:\/\/[^/@\s]+@/gi, (match) => {
+    const scheme = match.slice(0, match.indexOf("://"));
+    return `${scheme}://***:***@`;
+  });
 }
 function parseGoproxy(value) {
   const parts = value.split(",").map((p) => p.trim()).filter((p) => p.length > 0);
@@ -25660,7 +25676,7 @@ function parseToken(token) {
   try {
     parsed = new URL(token);
   } catch {
-    throw new Error(`Invalid goproxy URL: "${token}" is not a valid URL`);
+    throw new Error(`Invalid goproxy URL: "${redactUrl(token)}" is not a valid URL`);
   }
   if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
     throw new Error(`Unsupported protocol: ${parsed.protocol}`);
@@ -25668,17 +25684,27 @@ function parseToken(token) {
   const href = parsed.href.replace(/\/+$/, "");
   return { kind: "url", href };
 }
-function firstHttpProxy(tokens) {
-  const found = tokens.find((t) => t.kind === "url");
-  return found && found.kind === "url" ? found.href : null;
+function httpProxyUrls(tokens) {
+  const urls = [];
+  for (const token of tokens) {
+    if (token.kind !== "url") {
+      break;
+    }
+    urls.push(token.href);
+  }
+  return urls;
 }
 function encodeModulePath(importPath) {
   return importPath.replace(/[A-Z]/g, (ch) => `!${ch.toLowerCase()}`);
 }
+function canonicalProxyVersion(version) {
+  return /^v/i.test(version) ? version : `v${version}`;
+}
 function moduleVersionUrl(goproxy, importPath, version, file) {
   const base = goproxy.replace(/\/+$/, "");
   const encoded = encodeModulePath(importPath);
-  return `${base}/${encoded}/@v/${version}.${file}`;
+  const proxyVersion = canonicalProxyVersion(version);
+  return `${base}/${encoded}/@v/${proxyVersion}.${file}`;
 }
 
 // src/inputs.ts
@@ -25710,7 +25736,7 @@ function parseRetries(raw) {
 }
 function parsePkgGoDev(raw) {
   if (raw === "")
-    return true;
+    return false;
   const lower = raw.toLowerCase();
   if (lower === "true")
     return true;
@@ -25771,7 +25797,8 @@ function resolvePackage(versionInfo, importPath, repository) {
   if (versionInfo.isSubmodule && versionInfo.submodulePath) {
     pkg = `${pkg}/${versionInfo.submodulePath}`;
   }
-  if (versionInfo.majorVersion !== null && versionInfo.majorVersion > 1) {
+  const incompatible = versionInfo.version.endsWith("+incompatible");
+  if (!incompatible && versionInfo.majorVersion !== null && versionInfo.majorVersion > 1) {
     const suffix = `/v${versionInfo.majorVersion}`;
     if (!pkg.endsWith(suffix)) {
       pkg = `${pkg}${suffix}`;
@@ -25813,23 +25840,44 @@ async function pullToProxy(importPath, version, goproxy) {
 }
 
 // src/http.ts
+class HttpStatusError extends Error {
+  status;
+  constructor(message, status) {
+    super(message);
+    this.name = "HttpStatusError";
+    this.status = status;
+  }
+}
 var RETRYABLE = new Set([404, 410, 429, 500, 502, 503, 504]);
 var DEFAULT_DELAYS = [2000, 5000, 1e4, 20000, 20000];
+function requestUrlAndHeaders(url) {
+  const parsed = new URL(url);
+  const headers = {};
+  if (parsed.username || parsed.password) {
+    const credentials = `${decodeURIComponent(parsed.username)}:${decodeURIComponent(parsed.password)}`;
+    headers.Authorization = `Basic ${Buffer.from(credentials).toString("base64")}`;
+    parsed.username = "";
+    parsed.password = "";
+  }
+  return { url: parsed.toString(), headers };
+}
 async function fetchWithRetry(url, opts) {
   const fetchImpl2 = opts.fetchImpl ?? fetch;
   const sleep = opts.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms)));
   const retries = opts.retries ?? 5;
+  const { url: requestUrl, headers } = requestUrlAndHeaders(url);
   let lastError;
   for (let attempt = 0;attempt < retries; attempt++) {
     try {
       info(`GET ${sanitizeProxy(url)} (attempt ${attempt + 1}/${retries})`);
-      const res = await fetchImpl2(url, {
-        signal: AbortSignal.timeout(opts.timeoutMs ?? 30000)
+      const res = await fetchImpl2(requestUrl, {
+        signal: AbortSignal.timeout(opts.timeoutMs ?? 30000),
+        headers
       });
-      if (res.ok) {
+      if (res.status === 200) {
         return res;
       }
-      lastError = new Error(`GET ${sanitizeProxy(url)} failed with HTTP ${res.status}`);
+      lastError = new HttpStatusError(`GET ${sanitizeProxy(url)} failed with HTTP ${res.status}`, res.status);
       if (!RETRYABLE.has(res.status) || attempt === retries - 1) {
         throw lastError;
       }
@@ -25838,9 +25886,8 @@ async function fetchWithRetry(url, opts) {
       if (attempt === retries - 1) {
         throw lastError;
       }
-      const statusMatch = /HTTP (\d+)/.exec(lastError.message);
-      const status = statusMatch ? Number(statusMatch[1]) : undefined;
-      if (status !== undefined && !RETRYABLE.has(status)) {
+      const status = lastError instanceof HttpStatusError ? lastError.status : Number(/HTTP (\d+)/.exec(lastError.message)?.[1]);
+      if (Number.isInteger(status) && !RETRYABLE.has(status)) {
         throw lastError;
       }
     }
@@ -25853,8 +25900,32 @@ async function pullViaHttp(opts) {
   const modUrl = moduleVersionUrl(opts.goproxy, opts.importPath, opts.version, "mod");
   const infoRes = await fetchWithRetry(infoUrl, opts);
   const body = await infoRes.text();
-  await fetchWithRetry(modUrl, opts);
+  try {
+    await fetchWithRetry(modUrl, opts);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    warning(`Module .mod warm failed after successful .info: ${message}`);
+  }
   return { infoUrl, status: infoRes.status, body };
+}
+async function pullViaGoproxyList(tokens, opts) {
+  const urls = httpProxyUrls(tokens);
+  if (urls.length === 0) {
+    throw new Error("method=http requires an HTTP(S) GOPROXY entry; got only direct/off. Use method: go-get.");
+  }
+  let lastError;
+  for (const goproxy of urls) {
+    try {
+      return await pullViaHttp({ ...opts, goproxy });
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      if (lastError instanceof HttpStatusError && (lastError.status === 404 || lastError.status === 410)) {
+        continue;
+      }
+      throw lastError;
+    }
+  }
+  throw lastError ?? new Error("All GOPROXY URLs failed");
 }
 
 // src/main.ts
@@ -25896,13 +25967,7 @@ async function run() {
     const tokens = parseGoproxy(inputs.goproxy);
     let infoUrl = "";
     if (inputs.method === "http") {
-      const base = firstHttpProxy(tokens);
-      if (base === null) {
-        setFailed("method=http requires an HTTP(S) GOPROXY entry; got only direct/off. Use method: go-get.");
-        return;
-      }
-      const result = await pullViaHttp({
-        goproxy: base,
+      const result = await pullViaGoproxyList(tokens, {
         importPath: pkg.importPath,
         version: pkg.version,
         retries: inputs.retries
@@ -25924,9 +25989,9 @@ async function run() {
     notice(`Successfully pulled ${pkg.importPath}@${pkg.version} to proxy`);
   } catch (err) {
     if (err instanceof Error) {
-      setFailed(err.message);
+      setFailed(sanitizeErrorMessage(err.message));
     } else {
-      setFailed(String(err));
+      setFailed(sanitizeErrorMessage(String(err)));
     }
   }
 }
