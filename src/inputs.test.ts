@@ -18,19 +18,19 @@ describe("parseInputs", () => {
         it("uses default proxy when not provided", async () => {
             await mockGetInput({});
             const result = parseInputs();
-            expect(result.goproxy).toBe("https://proxy.golang.org/");
+            expect(result.goproxy).toBe("https://proxy.golang.org");
         });
 
         it("accepts a custom http proxy URL", async () => {
             await mockGetInput({ goproxy: "http://proxy.example.com" });
             const result = parseInputs();
-            expect(result.goproxy).toBe("http://proxy.example.com/");
+            expect(result.goproxy).toBe("http://proxy.example.com");
         });
 
         it("accepts a custom https proxy URL", async () => {
             await mockGetInput({ goproxy: "https://proxy.example.com" });
             const result = parseInputs();
-            expect(result.goproxy).toBe("https://proxy.example.com/");
+            expect(result.goproxy).toBe("https://proxy.example.com");
         });
 
         it("throws on invalid URL", async () => {
@@ -46,7 +46,7 @@ describe("parseInputs", () => {
         it("trims whitespace from input", async () => {
             await mockGetInput({ goproxy: "  https://proxy.example.com  " });
             const result = parseInputs();
-            expect(result.goproxy).toBe("https://proxy.example.com/");
+            expect(result.goproxy).toBe("https://proxy.example.com");
         });
     });
 
@@ -87,8 +87,79 @@ describe("parseInputs", () => {
                 import_path: "my.domain.com/lib",
             });
             const result = parseInputs();
-            expect(result.goproxy).toBe("https://private.proxy.io/");
+            expect(result.goproxy).toBe("https://private.proxy.io");
             expect(result.importPath).toBe("my.domain.com/lib");
+        });
+    });
+
+    describe("goproxy lists", () => {
+        it("accepts a comma-separated GOPROXY list", async () => {
+            await mockGetInput({ goproxy: "https://proxy.golang.org,direct" });
+            const result = parseInputs();
+            expect(result.goproxy).toBe("https://proxy.golang.org,direct");
+        });
+    });
+
+    describe("method", () => {
+        it("defaults to http", async () => {
+            await mockGetInput({});
+            expect(parseInputs().method).toBe("http");
+        });
+
+        it("accepts go-get", async () => {
+            await mockGetInput({ method: "go-get" });
+            expect(parseInputs().method).toBe("go-get");
+        });
+
+        it("throws on an unknown method", async () => {
+            await mockGetInput({ method: "ftp" });
+            expect(() => parseInputs()).toThrow(/method/i);
+        });
+    });
+
+    describe("version", () => {
+        it("defaults to empty string", async () => {
+            await mockGetInput({});
+            expect(parseInputs().version).toBe("");
+        });
+
+        it("passes through an explicit version", async () => {
+            await mockGetInput({ version: "v1.2.3" });
+            expect(parseInputs().version).toBe("v1.2.3");
+        });
+    });
+
+    describe("retries", () => {
+        it("defaults to 5", async () => {
+            await mockGetInput({});
+            expect(parseInputs().retries).toBe(5);
+        });
+
+        it("parses a positive integer", async () => {
+            await mockGetInput({ retries: "3" });
+            expect(parseInputs().retries).toBe(3);
+        });
+
+        it("throws on a non-integer", async () => {
+            await mockGetInput({ retries: "nope" });
+            expect(() => parseInputs()).toThrow(/retries/i);
+        });
+
+        it("throws on zero", async () => {
+            await mockGetInput({ retries: "0" });
+            expect(() => parseInputs()).toThrow(/retries/i);
+        });
+    });
+
+    describe("pkg-go-dev", () => {
+        it("defaults to true", async () => {
+            await mockGetInput({});
+            expect(parseInputs().pkgGoDev).toBe(true);
+        });
+
+        it("accepts false", async () => {
+            await mockGetInput({ "pkg-go-dev": "false" });
+            expect(parseInputs().pkgGoDev).toBe(false);
         });
     });
 });

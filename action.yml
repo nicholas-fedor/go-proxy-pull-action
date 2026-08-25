@@ -3,17 +3,33 @@ description: "Pull the new release of a module to the Go proxy cache"
 author: "Nicholas Fedor"
 inputs:
   goproxy:
-    description: "URL of the proxy to be passed to `go get` as GOPROXY="
+    description: "Go proxy list passed as GOPROXY (comma-separated URLs plus optional direct/off)."
     required: false
     default: "https://proxy.golang.org"
   import_path:
-    description: "Package import path. If not set, github.com/<user>/<repo> is used as a default"
+    description: "Package import path. If not set, github.com/<user>/<repo> is used as a default (lowercased)."
     required: false
     default: ""
-  go-version:
-    description: "The Go version to use (e.g., 1.26, 1.26.1). Semver ranges, stable, oldstable, and wildcards are supported. Takes precedence over go-version-file."
+  version:
+    description: "Module version to pull (e.g. v1.2.3 or submodule/v1.2.3). If unset, GITHUB_REF must be a tag."
     required: false
-    default: "1.26"
+    default: ""
+  method:
+    description: "Warming method: http (module proxy protocol) or go-get (dummy module)."
+    required: false
+    default: "http"
+  retries:
+    description: "Max HTTP attempts for .info/.mod (http method only)."
+    required: false
+    default: "5"
+  pkg-go-dev:
+    description: "If true, ping pkg.go.dev after a successful proxy warm. Failures are warnings."
+    required: false
+    default: "true"
+  go-version:
+    description: "The Go version to use for method=go-get (e.g. '1.26', 'stable'). Semver ranges, stable, oldstable, and wildcards are supported. Takes precedence over go-version-file. Aliases are not supported when go-download-base-url is set."
+    required: false
+    default: "stable"
   go-version-file:
     description: "Path to a go.mod, go.work, .go-version, or .tool-versions file to read the Go version from. Relative to the repository root."
     required: false
@@ -39,13 +55,24 @@ inputs:
     required: false
     default: ""
   go-download-base-url:
-    description: "Custom base URL for downloading Go distributions (e.g., for mirrors or air-gapped environments)."
+    description: "Custom base URL for downloading Go distributions (e.g., for mirrors or air-gapped environments). Not compatible with go-version aliases such as stable."
     required: false
     default: ""
+outputs:
+  import-path:
+    description: "Resolved module import path"
+    value: ${{ steps.pull.outputs.import-path }}
+  version:
+    description: "Resolved module version"
+    value: ${{ steps.pull.outputs.version }}
+  info-url:
+    description: "Module proxy .info URL that returned 200"
+    value: ${{ steps.pull.outputs.info-url }}
 runs:
   using: "composite"
   steps:
     - name: Set up Go
+      if: ${{ inputs.method == 'go-get' }}
       uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
       with:
         go-version: ${{ inputs.go-version }}
@@ -54,14 +81,19 @@ runs:
         cache: ${{ inputs.cache }}
         cache-dependency-path: ${{ inputs.cache-dependency-path }}
         architecture: ${{ inputs.architecture }}
-        token: ${{ inputs.token }}
+        token: ${{ inputs.token || github.token }}
         go-download-base-url: ${{ inputs.go-download-base-url }}
     - name: Pull new module version to proxy
+      id: pull
       shell: bash
       run: node '${{ github.action_path }}/dist/index.js'
       env:
         INPUT_GOPROXY: ${{ inputs.goproxy }}
         INPUT_IMPORT_PATH: ${{ inputs.import_path }}
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_METHOD: ${{ inputs.method }}
+        INPUT_RETRIES: ${{ inputs.retries }}
+        "INPUT_PKG-GO-DEV": ${{ inputs.pkg-go-dev }}
 branding:
   icon: "download"
   color: "blue"

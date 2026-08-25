@@ -10,7 +10,7 @@ export function resolvePackage(
     importPath: string,
     repository: string,
 ): PackageInfo {
-    const base = importPath || `github.com/${repository}`;
+    const base = importPath || `github.com/${repository.toLowerCase()}`;
 
     let pkg = base;
 

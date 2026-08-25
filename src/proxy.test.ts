@@ -85,6 +85,7 @@ describe("pullToProxy", () => {
         expect(secondCall![2]!.env).toMatchObject({
             GO111MODULE: "on",
             GOPROXY: "https://custom.proxy.io",
+            GOTOOLCHAIN: "auto",
         });
     });
 });

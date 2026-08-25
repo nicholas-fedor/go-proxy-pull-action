@@ -166,6 +166,32 @@ describe("resolvePackage", () => {
         });
     });
 
+    describe("default github.com import path casing", () => {
+        it("lowercases the default github.com import path", () => {
+            const versionInfo: VersionInfo = {
+                tag: "v1.0.0",
+                version: "v1.0.0",
+                isSubmodule: false,
+                submodulePath: "",
+                majorVersion: 1,
+            };
+            const result = resolvePackage(versionInfo, "", "Example-Org/MyModule");
+            expect(result.importPath).toBe("github.com/example-org/mymodule");
+        });
+
+        it("does not rewrite a custom import path", () => {
+            const versionInfo: VersionInfo = {
+                tag: "v1.0.0",
+                version: "v1.0.0",
+                isSubmodule: false,
+                submodulePath: "",
+                majorVersion: 1,
+            };
+            const result = resolvePackage(versionInfo, "example.com/MyProject", "user/repo");
+            expect(result.importPath).toBe("example.com/MyProject");
+        });
+    });
+
     describe("edge cases", () => {
         it("does not append suffix when majorVersion is null", () => {
             const versionInfo: VersionInfo = {
