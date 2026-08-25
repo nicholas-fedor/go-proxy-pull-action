@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Warm the module proxy over HTTP instead of go get by @nicholas-fedor in [#190](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/190)
+
+## [1.1.47] - 2026-08-24
+
 ### Chores
 
 - Lock file maintenance by @renovate[bot] in [#188](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/188)
@@ -500,7 +506,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Compare Releases
 
-- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.46...HEAD)
+- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.47...HEAD)
+- [1.1.47](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.46...v1.1.47)
 - [1.1.46](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.45...v1.1.46)
 - [1.1.45](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.44...v1.1.45)
 - [1.1.44](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.43...v1.1.44)
