@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Chores
+
+- Update github/codeql-action action to v4.37.9 by @renovate[bot] in [#193](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/193)
+- Rebuild dist/index.js by @github-actions[bot] in [#192](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/192)
+
+## [1.1.48] - 2026-08-25
+
 ### Fixed
 
 - Warm the module proxy over HTTP instead of go get by @nicholas-fedor in [#190](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/190)
@@ -506,7 +513,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Compare Releases
 
-- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.47...HEAD)
+- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.48...HEAD)
+- [1.1.48](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.47...v1.1.48)
 - [1.1.47](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.46...v1.1.47)
 - [1.1.46](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.45...v1.1.46)
 - [1.1.45](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.44...v1.1.45)
