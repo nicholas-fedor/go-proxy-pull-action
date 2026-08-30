@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chores
 
+- Update dependency @types/node to v26.4.0 by @renovate[bot] in [#197](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/197)
 - Update dependency @types/node to v26.3.0 by @renovate[bot] in [#195](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/195)
 
 ## [1.1.49] - 2026-08-26
