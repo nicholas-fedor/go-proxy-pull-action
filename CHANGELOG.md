@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chores
 
+- Lock file maintenance by @renovate[bot] in [#200](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/200)
+- Update step-security/harden-runner action to v2.21.1 by @renovate[bot] in [#199](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/199)
 - Update dependency @types/node to v26.4.0 by @renovate[bot] in [#197](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/197)
 - Update dependency @types/node to v26.3.0 by @renovate[bot] in [#195](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/195)
 
