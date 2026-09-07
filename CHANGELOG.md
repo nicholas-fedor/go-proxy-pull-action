@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chores
 
+- Lock file maintenance by @renovate[bot] in [#207](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/207)
+- Rebuild dist/index.js by @github-actions[bot] in [#205](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/205)
 - Update dependency @types/node to v26.4.1 by @renovate[bot] in [#204](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/204)
 - Update orhun/git-cliff-action action to v4.9.0 by @renovate[bot] in [#202](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/202)
 - Lock file maintenance by @renovate[bot] in [#200](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/200)
