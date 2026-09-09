@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chores
 
+- Update github/codeql-action action to v4.38.0 by @renovate[bot] in [#212](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/212)
+
+## [1.1.51] - 2026-09-07
+
+### Chores
+
 - Update dependency @types/bun to v1.4.1 by @renovate[bot] in [#210](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/210)
 - Rebuild dist/index.js by @github-actions[bot] in [#208](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/208)
 
@@ -533,7 +539,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Compare Releases
 
-- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.50...HEAD)
+- [unreleased](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.51...HEAD)
+- [1.1.51](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.50...v1.1.51)
 - [1.1.50](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.49...v1.1.50)
 - [1.1.49](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.48...v1.1.49)
 - [1.1.48](https://github.com/nicholas-fedor/go-proxy-pull-action/compare/v1.1.47...v1.1.48)
