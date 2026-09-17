@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chores
 
+- Update codecov/codecov-action action to v7.1.1 by @renovate[bot] in [#224](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/224)
 - Update codecov/codecov-action action to v7.1.0 by @renovate[bot] in [#222](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/222)
 - Lock file maintenance by @renovate[bot] in [#220](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/220)
 - Update dependency @types/node to v26.5.1 by @renovate[bot] in [#218](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/218)
