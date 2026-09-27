@@ -25,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update dependency @types/node to v26.5.0 by @renovate[bot] in [#214](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/214)
 - Update github/codeql-action action to v4.38.0 by @renovate[bot] in [#212](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/212)
 
+### Fixed
+
+- Fix changelog automation workflows by @nicholas-fedor in [#239](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/239)
+
 ## [1.1.51] - 2026-09-07
 
 ### Chores
