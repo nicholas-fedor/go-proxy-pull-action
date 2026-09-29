@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chores
 
+- Update dependency @types/node to v26.6.3 by @renovate[bot] in [#244](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/244)
+- Rebuild dist/index.js by @github-actions[bot] in [#242](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/242)
 - Lock file maintenance by @renovate[bot] in [#241](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/241)
 - Update github/codeql-action action to v4.38.2 by @renovate[bot] in [#236](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/236)
 - Update dependency @semantic-release/github to v12.0.10 by @renovate[bot] in [#235](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/235)
