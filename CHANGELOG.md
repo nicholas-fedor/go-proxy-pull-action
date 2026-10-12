@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chores
 
+- Update ossf/scorecard-action action to v2.5.0 by @renovate[bot] in [#261](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/261)
 - Lock file maintenance by @renovate[bot] in [#259](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/259)
 - Update github/codeql-action action to v4.38.3 by @renovate[bot] in [#257](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/257)
 - Update actions/setup-node action to v7.1.0 by @renovate[bot] in [#255](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/255)
