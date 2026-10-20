@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chores
 
+- Update step-security/harden-runner action to v2.22.2 by @renovate[bot] in [#271](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/271)
 - Lock file maintenance by @renovate[bot] in [#269](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/269)
 - Update github/codeql-action action to v4.39.0 by @renovate[bot] in [#267](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/267)
 - Update dependency @types/bun to v1.4.3 by @renovate[bot] in [#265](https://github.com/nicholas-fedor/go-proxy-pull-action/pull/265)
